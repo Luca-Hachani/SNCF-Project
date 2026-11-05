@@ -9,8 +9,10 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "jupyter>=1.1.1",
+    "matplotlib>=3.11.2",
     "numpy>=2.5.3",
     "pandas>=3.0.6",
+    "seaborn>=0.13.2",
 ]
 
 [project.scripts]
@@ -25,6 +27,7 @@ dev = [
     "coverage>=7.16.2",
     "ruff>=0.2.0",
     "pytest>=9.1.1",
+    "missingno>=0.5.2",
 ]
 
 [tool.ruff]
