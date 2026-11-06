@@ -6,6 +6,10 @@ dist/
 wheels/
 *.egg-info
 draft/
+logs/*
+
+#personal note 
+.memo.md
 
 # Virtual environments
 .venv
