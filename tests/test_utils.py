@@ -1,6 +1,6 @@
 import pandas as pd
 
-from utils import load_dataset
+from sncf_project.utils import load_dataset
 
 
 def test_load_dataset_success(tmp_path):

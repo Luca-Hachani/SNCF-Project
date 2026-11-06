@@ -4,8 +4,8 @@ import pandas as pd
 import pydeck as pdk
 import streamlit as st
 
-from config import DATASET_RE_MEN_TGV_PATH, DATASET_STATIONS_PATH
-from utils import load_dataset
+from sncf_project.config import DATASET_RE_MEN_TGV_PATH, DATASET_STATIONS_PATH
+from sncf_project.utils import load_dataset
 
 logger = logging.getLogger("streamlit_app")
 
