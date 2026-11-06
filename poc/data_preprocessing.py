@@ -49,4 +49,4 @@ def preprocessing(df, columns_order=multi_columns, columns_drop_idx=(7, 11, 17))
     df[("Contexte", "Gare de départ")] = df[("Contexte", "Gare de départ")].astype('category')
     df[("Contexte", "Gare d'arrivée")] = df[("Contexte", "Gare d'arrivée")].astype('category')
     # drop empty/useless columns
-    df = df.drop(columns=[columns_order[i] for i in columns_drop_idx])
+    df.drop(columns=[columns_order[i] for i in columns_drop_idx], inplace=True)
