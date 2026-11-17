@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-import logging
+# import logging
 
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__)
 
 @dataclass
 class Traveler:
@@ -11,13 +11,13 @@ class Traveler:
 
     Attributes
     ----------
-    _departure_station : str
+    __departure_station : str
         The name of the departure train station.
 
-    _trip_date : str
+    __trip_date : str
         The scheduled date of the trip (format: YYYY-MM-DD).
 
-    _arrival_airport : str
+    __arrival_airport : str
         The target airport the traveler intends to reach, used to determine 
         the most favorable arrival train station.
 
@@ -40,17 +40,17 @@ class Traveler:
     -------
     #1 Create a traveler profile :
     traveler = Traveler(
-        _departure_station="LYON PART DIEU",
-        _trip_date="2026-07-15",
-        _arrival_airport="LYON SAINT-EXUPÉRY"
+        __departure_station="LYON PART DIEU",
+        __trip_date="2026-07-15",
+        __arrival_airport="LYON SAINT-EXUPÉRY"
     )
 
     #2 Access attributes via getters :
     station = traveler.get_departure_station
     """
-    _departure_station: str
-    _trip_date: str
-    _arrival_airport: str
+    __departure_station: str
+    __trip_date: str
+    __arrival_airport: str
 
     # Getters
 
@@ -65,7 +65,7 @@ class Traveler:
             The name of the departure train station.
         """
         # logger.debug("Getting departure station for traveler")
-        return self._departure_station
+        return self.__departure_station
 
     @property
     def get_trip_date(self) -> str:
@@ -78,7 +78,7 @@ class Traveler:
             The scheduled date of the trip (format: YYYY-MM-DD).
         """
         # logger.debug("Getting trip date for traveler")
-        return self._trip_date
+        return self.__trip_date
 
     @property
     def get_arrival_airport(self) -> str:
@@ -91,4 +91,4 @@ class Traveler:
             The target airport the traveler intends to reach.
         """
         # logger.debug("Getting arrival airport for traveler")
-        return self._arrival_airport
+        return self.__arrival_airport
