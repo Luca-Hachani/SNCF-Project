@@ -1,6 +1,6 @@
 import pandas as pd
 from itertools import permutations
-from settings import TRIP_MULTI_COLUMNS, REGION_MAPPING, STATION_TO_AIRPORT
+from sncf_project.settings import TRIP_MULTI_COLUMNS, REGION_MAPPING, STATION_TO_AIRPORT
 
 
 def preprocessing(df, columns_order=TRIP_MULTI_COLUMNS, columns_drop_idx=(7, 11, 17)):

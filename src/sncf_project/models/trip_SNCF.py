@@ -3,8 +3,9 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 import networkx as nx
+import pathlib
 from itertools import permutations
-from settings import STATION_TO_AIRPORT
+from sncf_project.settings import STATION_TO_AIRPORT
 
 # logger = logging.getLogger(__name__)
 
@@ -54,12 +55,15 @@ class Trip:
         Lists all possible arrival train stations matching the target arrival airport.
     get_path_to_target_station(target_station: str) -> list of str
         Calculates the shortest path to a target station using the unique links graph.
+        !!! The data have to loaded !!!
     get_all_paths_to_stations() -> list of list of str
         Retrieves all valid shortest paths from the departure station to every target 
         station associated with the arrival airport.
+        !!! The data have to loaded !!!
     set_shortest_path() -> None
         Selects and assign the path with the fewest stations attribute 
         among all possible paths to the target airport.
+        !!! The data have to loaded !!!
     set_arrival_station() -> None
         Assigns the arrival station attribute using the last element 
         of the shortest path. 
@@ -80,11 +84,11 @@ class Trip:
     #->2 : Create a trip instance :
     trip = Trip(
         _departure_station="LYON PART DIEU",
-        _arrival_station="PARIS LYON",
         _trip_date="2026-07-15",
         _arrival_airport="PARIS-ORLY / PARIS-CHARLES-DE-GAULLE"
     )
     #->3 : Get all stations matching the target airport :
+    #----------> The data has been loaded yet <----------
     stations = trip.get_possible_arrival_stations()
 
     #->4 : Compute and set the shortest path by number of stops :
@@ -114,9 +118,9 @@ class Trip:
 
     @classmethod
     def load_datasets(cls, 
-                      df_path: str = "../data/processed_df.csv", 
-                      seasonality_path: str = "../data/processed_airport_seasonality.csv", 
-                      links_path: str = "../data/df_rail_links.csv") -> None:
+                      df_path: str = None, 
+                      seasonality_path: str = None, 
+                      links_path: str = None) -> None:
         """
         Loads preprocessed datasets directly into class-level attributes.
 
@@ -131,8 +135,21 @@ class Trip:
 
         Notes
         -----
-        - Datasets are loaded only once at runtime to optimize memory and performance.
+        Datasets are loaded only once at runtime to optimize memory and performance.
         """
+        # Détermination dynamique de la racine du projet à partir de ce fichier :
+        # src/sncf_project/models/trip_SNCF.py
+        base_dir = pathlib.Path(__file__).resolve().parents[3]
+        
+        # Définition des chemins par défaut s'ils ne sont pas spécifiés
+        if df_path is None:
+            df_path = base_dir / "data" / "processed_df.csv"
+        if seasonality_path is None:
+            seasonality_path = base_dir / "data" / "processed_airport_seasonality.csv"
+        if links_path is None:
+            links_path = base_dir / "data" / "df_rail_links.csv"
+        
+        # Chargement effectif des datasets
         # logger.debug("Loading preprocessed datasets for Trip at class level")
         
         # if not hasattr(cls, "__df") or cls.__df is None:
@@ -240,6 +257,8 @@ class Trip:
         Computes the ordered list of stations to follow from the departure station 
         to a specific target station, minimizing the average travel time.
 
+        !!! The data have to loaded !!!
+
         Parameters
         ----------
         target_station : str
@@ -291,6 +310,8 @@ class Trip:
         then computes and returns a list of all valid paths from the departure station 
         to each of those target stations.
 
+        !!! The data have to loaded !!!
+
         Returns
         -------
         list of list of str
@@ -315,6 +336,8 @@ class Trip:
         """
         Retrieves the shortest path by number of stops (elements) among all possible 
         paths to the target airport.
+
+        !!! The data have to loaded !!!
         """
         paths = self.get_all_paths_to_possible_arrival_stations()
         
