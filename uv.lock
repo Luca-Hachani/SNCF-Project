@@ -2401,6 +2401,7 @@ source = { editable = "." }
 dependencies = [
     { name = "jupyter" },
     { name = "matplotlib" },
+    { name = "networkx" },
     { name = "numpy" },
     { name = "pandas" },
     { name = "seaborn" },
@@ -2410,7 +2411,6 @@ dependencies = [
 dev = [
     { name = "coverage" },
     { name = "missingno" },
-    { name = "networkx" },
     { name = "pytest" },
     { name = "ruff" },
 ]
@@ -2419,6 +2419,7 @@ dev = [
 requires-dist = [
     { name = "jupyter", specifier = ">=1.1.1" },
     { name = "matplotlib", specifier = ">=3.11.2" },
+    { name = "networkx", specifier = ">=3.7" },
     { name = "numpy", specifier = ">=2.5.3" },
     { name = "pandas", specifier = ">=3.0.6" },
     { name = "seaborn", specifier = ">=0.13.2" },
@@ -2428,7 +2429,6 @@ requires-dist = [
 dev = [
     { name = "coverage", specifier = ">=7.16.2" },
     { name = "missingno", specifier = ">=0.5.2" },
-    { name = "networkx", specifier = ">=3.7" },
     { name = "pytest", specifier = ">=9.1.1" },
     { name = "ruff", specifier = ">=0.2.0" },
 ]
