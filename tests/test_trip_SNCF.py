@@ -190,6 +190,9 @@ def test_get_all_paths_and_set_shortest_path_and_arrival():
         trip.set_arrival_station()
         assert trip.get_arrival_station == "PARIS-STATION_1-TEST"
 
+
+# Test set_shortest_path
+
 def test_set_shortest_path_no_paths_found():
     """
     Vérifie le comportement lorsque aucun chemin valide n'est trouvé.
@@ -210,3 +213,25 @@ def test_set_shortest_path_no_paths_found():
         
         trip.set_arrival_station()
         assert trip.get_arrival_station is None
+
+# Test set_arrival_station
+
+def test_set_arrival_station_without_shortest_path():
+    """
+    Vérifie qu'il est impossible de définir la gare d'arrivée 
+    si _shortest_path n'a pas été calculé (vaut None).
+    """
+    trip = Trip(
+        _departure_station="MARSEILLE-STATION-TEST",
+        _trip_date="1789-07-14",
+        _arrival_airport="PARIS-AIRPORT-TEST"
+    )
+    
+    # S'assurer que le chemin est bien à None à l'initialisation
+    assert trip.get_shortest_path is None
+    
+    # Tenter de définir la gare d'arrivée sans chemin préalable
+    trip.set_arrival_station()
+    
+    # La gare d'arrivée doit rester None
+    assert trip.get_arrival_station is None
