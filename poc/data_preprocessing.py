@@ -156,14 +156,14 @@ def airport_seasonality(df):
     return df_airport_seasonality
 
 
-def unique_links(df):
+def rail_links(df):
     # Extraction de toutes les liaisons uniques (Gare de départ -> Gare d'arrivée)
-    unique_links = (
+    df_rail_links = (
         df[[("Contexte", "Gare de départ"), ("Contexte", "Gare d'arrivée"), ("Contexte", "Durée moyenne du trajet")]]
         .drop_duplicates()
         .reset_index(drop=True)
         )
-    unique_links.columns = ["Gare de départ", "Gare d'arrivée", "Durée moyenne du trajet"]
+    df_rail_links.columns = ["Gare de départ", "Gare d'arrivée", "Durée moyenne du trajet"]
 
     # Extraction directe et unique des gares d'Île-de-France
     idf_stations = (
@@ -194,11 +194,11 @@ def unique_links(df):
         .reset_index(drop=True)
         )
 
-    # Fusion avec unique_links et nettoyage des doublons
-    unique_links = (
-        pd.concat([unique_links, new_links], ignore_index=True)
+    # Fusion avec df_rail_links et nettoyage des doublons
+    df_rail_links = (
+        pd.concat([df_rail_links, new_links], ignore_index=True)
         .drop_duplicates(subset=["Gare de départ", "Gare d'arrivée"])
         .reset_index(drop=True)
         )
     
-    return unique_links
+    return df_rail_links
