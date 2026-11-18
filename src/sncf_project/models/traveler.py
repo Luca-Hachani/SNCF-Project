@@ -1,3 +1,5 @@
+"""Domain model representing a traveler and their TGV-to-airport trip criteria."""
+
 import datetime
 import logging
 from dataclasses import dataclass, field
@@ -6,167 +8,148 @@ import pandas as pd
 
 from sncf_project.utils import find_closest_stations
 
-logger = logging.getLogger("utils")
+logger = logging.getLogger("sncf_project.models.traveler")
 
 
 @dataclass
 class Traveler:
-    """
-    Class representing a traveler and their journeys criteria,
-    used to filter and analyze train punctuality data relative to airport connections.
+    """Represent a traveler and their trip criteria for TGV-to-airport matching.
 
-    Attributes
-    ----------
-    __departure_station : str
-        The name of the departure train station.
+    Stores the departure airport code, scheduled trip date, and departure city,
+    and resolves the closest TGV departure stations from SNCF and commune
+    geospatial datasets.
 
-    __trip_date : str
-        The scheduled date of the trip (format: YYYY-MM-DD).
+    Attributes:
+        __departure_airport (str): IATA code or identifier of the departure
+            airport (e.g., ``"LYS"``, ``"CDG"``).
+        __trip_date (datetime.date): Scheduled date of the trip.
+        __departure_city (str): Name of the traveler's departure commune/city.
+        __departure_station (list[str] | None): Ordered list of the closest
+            TGV departure station names computed by
+            ``compute_departure_station``, or ``None`` before computation.
 
-    __arrival_airport : str
-        The target airport the traveler intends to reach, used to determine
-        the most favorable arrival train station.
-
-    Methods
-    -------
-    get_departure_station() -> str
-        Returns the departure train station.
-
-    get_trip_date() -> str
-        Returns the scheduled date of the trip.
-
-    get_arrival_airport() -> str
-        Returns the target arrival airport.
-
-    Notes
-    -----
-    - Integrates with the Streamlit interface to manage user trip criteria dynamically.
-
-    Example
-    -------
-    #1 Create a traveler profile :
-    traveler = Traveler(
-        __departure_airport="LYS",
-        __trip_date="2026-07-15",
-        __departure_city="Caen"
-    )
-
-    #2 Access attributes via getters :
-    station = traveler.get_departure_airport
+    Example:
+        >>> import datetime
+        >>> traveler = Traveler("LYS", datetime.date(2026, 7, 15), "Caen")
+        >>> traveler.get_departure_airport
+        'LYS'
     """
 
     __departure_airport: str
-    __trip_date: datetime
+    __trip_date: datetime.date
     __departure_city: str
     __departure_station: list[str] | None = field(default=None, init=False)
 
-    # Getters
-
     @property
     def get_departure_airport(self) -> str:
-        """
-        Returns the target departure airport.
+        """Return the traveler's target departure airport.
 
-        Returns
-        -------
-        str
-            The target airport the traveler intends to reach.
+        Returns:
+            str: The departure airport code or identifier.
         """
         logger.debug("Getting departure airport for traveler")
         return self.__departure_airport
 
     @property
-    def get_trip_date(self) -> str:
-        """
-        Returns the scheduled date of the trip.
+    def get_trip_date(self) -> datetime.date:
+        """Return the scheduled date of the trip.
 
-        Returns
-        -------
-        str
-            The scheduled date of the trip (format: YYYY-MM-DD).
+        Returns:
+            datetime.date: The scheduled trip date.
         """
         logger.debug("Getting trip date for traveler")
         return self.__trip_date
 
     @property
     def get_departure_city(self) -> str:
-        """
-        Returns the target arrival airport.
+        """Return the traveler's departure city name.
 
-        Returns
-        -------
-        str
-            The target airport the traveler intends to reach.
+        Returns:
+            str: The departure city name.
         """
         logger.debug("Getting departure city for traveler")
         return self.__departure_city
 
     @property
-    def get_departure_station(self) -> list[str]:
-        """
-        Returns the departure train station.
+    def get_departure_station(self) -> list[str] | None:
+        """Return the closest departure TGV station names, if computed.
 
-        Returns
-        -------
-        str
-            The name of the departure train station.
+        Returns:
+            list[str] | None: List of up to 3 closest station names, or
+                ``None`` if ``compute_departure_station`` has not been called.
         """
         logger.debug("Getting departure station for traveler")
         return self.__departure_station
 
-    # Get the station closest to the departure_city
     def compute_departure_station(
         self,
         df_reg: pd.DataFrame,
         df_stations: pd.DataFrame,
         df_communes: pd.DataFrame,
     ) -> None:
+        """Compute the 3 closest TGV departure stations to ``__departure_city``.
+
+        Looks up the departure city's coordinates in ``df_communes``, matches
+        active TGV departure stations between ``df_reg`` and ``df_stations``,
+        deduplicates station coordinates by station name, and stores the 3
+        nearest station names in ``__departure_station``.
+
+        Args:
+            df_reg (pd.DataFrame): TGV monthly regularity DataFrame containing
+                ``"Gare de départ"``.
+            df_stations (pd.DataFrame): Reference stations DataFrame containing
+                ``"LIBELLE"``, ``"X_WGS84"``, and ``"Y_WGS84"``.
+            df_communes (pd.DataFrame): French communes DataFrame containing
+                ``"nom_de_la_commune"``, ``"longitude"``, and ``"latitude"``.
+
+        Returns:
+            None
+
+        Raises:
+            ValueError: If ``__departure_city`` is not found in ``df_communes``.
         """
-        Compute the departure station.
-
-        Returns
-        -------
-        None
-
-        """
-
-        # All info of the city departure
         departure_city_info = df_communes[
             df_communes["nom_de_la_commune"] == self.__departure_city
         ]
-        logger.info(f"{departure_city_info}")
-        logger.info(f"{type(departure_city_info)}")
+        if departure_city_info.empty:
+            msg = (
+                f"Departure city not found in communes dataset: {self.__departure_city}"
+            )
+            logger.error(msg)
+            raise ValueError(msg)
+
         departure_geoloc = [
             float(departure_city_info["longitude"].iloc[0]),
             float(departure_city_info["latitude"].iloc[0]),
         ]
 
-        # Match stations with geoloc from 2 SNCF Dataset
-        # Column gare_depart is uppercase and libelle is lowercase
-        # In df_reg -> LYON PERRACHE
-        # In df_stations -> Lyon-Perrache
-        df_reg["clean_station"] = df_reg["Gare de départ"].str.upper().str.strip()
-        df_stations["clean_station"] = (
-            df_stations["LIBELLE"]
-            .str.upper()
-            .str.strip()
-            .str.replace("-", " ", regex=False)
+        # Match stations with geoloc from 2 SNCF datasets without mutating inputs
+        clean_reg_stations = (
+            df_reg["Gare de départ"].dropna().str.upper().str.strip().unique()
         )
 
-        # Display stations name
-        df_stations["display_name"] = df_stations["LIBELLE"].str.title().str.strip()
+        clean_stations = pd.DataFrame(
+            {
+                "clean_station": (
+                    df_stations["LIBELLE"]
+                    .str.upper()
+                    .str.strip()
+                    .str.replace("-", " ", regex=False)
+                ),
+                "display_name": df_stations["LIBELLE"]
+                .astype(str)
+                .str.title()
+                .str.strip(),
+                "lon": pd.to_numeric(df_stations["X_WGS84"], errors="coerce"),
+                "lat": pd.to_numeric(df_stations["Y_WGS84"], errors="coerce"),
+            }
+        )
 
-        # rename column X_WGS84/Y_WGS84 into lon/lat
-        df_coords = df_stations[
-            ["clean_station", "display_name", "X_WGS84", "Y_WGS84"]
-        ].rename(columns={"X_WGS84": "lon", "Y_WGS84": "lat"})
-
-        # Merge inner on stations
-        df_pos_stations = pd.merge(df_reg, df_coords, on="clean_station", how="inner")
-
-        # Drop duplicates
         df_unique_pos = (
-            df_pos_stations[["lon", "lat", "display_name"]].drop_duplicates().dropna()
+            clean_stations[clean_stations["clean_station"].isin(clean_reg_stations)]
+            .dropna(subset=["lon", "lat", "display_name"])
+            .groupby("display_name", as_index=False)
+            .agg({"lon": "mean", "lat": "mean"})
         )
 
         self.__departure_station = find_closest_stations(

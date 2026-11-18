@@ -1,51 +1,64 @@
+"""Main entry point for the SNCF Project Streamlit web application.
+
+Initializes application-wide logging, configures Streamlit page metadata,
+registers multipage navigation routes, and executes the active page.
+"""
+
 import logging
+from pathlib import Path
 
 import streamlit as st
 
-from sncf_project.config import (
-    DATASET_COMMUNES_PATH,
-    DATASET_RE_MEN_TGV_PATH,
-    DATASET_STATIONS_PATH,
-)
-from sncf_project.frontend.map_stations import render_map_stations
-from sncf_project.frontend.search_form import render_airport_form
-from sncf_project.utils import load_dataset
+from sncf_project.config import setup_logging
 
-logger = logging.getLogger("streamlit_app")
+# app.py -> sncf_project/ -> src/ -> project_root/
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+LOGGING_CONFIG_PATH = PROJECT_ROOT / "configs" / "logging_config.yaml"
+
+
+@st.cache_resource
+def init_logging() -> bool:
+    """Initialize process-wide logging configuration once per server lifecycle.
+
+    Wraps ``setup_logging`` inside ``@st.cache_resource`` so that the YAML
+    logging configuration is loaded once at startup rather than on every
+    Streamlit script rerun.
+
+    Returns:
+        bool: Always returns ``True`` once logging configuration succeeds.
+    """
+    setup_logging(config_path=LOGGING_CONFIG_PATH)
+    return True
+
+
+init_logging()
+
+logger = logging.getLogger("sncf_project.app")
 
 st.set_page_config(
-    page_title="Projet SNCF",
+    page_title="SNCF Project",
     page_icon="🚄",
     layout="wide",
 )
 
+logger.info("Application started")
 
-def main():
-    st.title("PROJET SNCF 🚄")
+# Register pages in the left sidebar menu
+pg = st.navigation(
+    [
+        st.Page(
+            "pages/homepage.py",
+            title="Website description",
+            icon="🏠",
+            default=True,
+        ),
+        st.Page("pages/data_visualization.py", title="Visualize the Data", icon="📊"),
+        st.Page("pages/search_form.py", title="Plan your TGV", icon="🔍"),
+    ]
+)
 
-    logger.info("Streamlit application start")
+# Any st.sidebar elements placed in app.py appear across ALL pages
+with st.sidebar:
+    st.caption("SNCF Project - IADATA701")
 
-    # Load the CSV File
-    df_reg = load_dataset(DATASET_RE_MEN_TGV_PATH)
-    df_stations = load_dataset(DATASET_STATIONS_PATH)
-    df_communes = load_dataset(DATASET_COMMUNES_PATH, sep=",")
-
-    if df_reg is not None and df_stations is not None:
-        st.success("The datasets loaded successfully!")
-
-        with st.container():
-            render_airport_form(df_communes)
-
-        with st.container():
-            render_map_stations(df_reg, df_stations)
-
-        with st.container():
-            if st.checkbox("Preview des données"):
-                st.dataframe(df_reg.head())
-    else:
-        st.error("Failed to load the datasets.. Check logs")
-        logger.warning("The datasets did not load in the UI")
-
-
-if __name__ == "__main__":
-    main()
+pg.run()

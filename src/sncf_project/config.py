@@ -8,7 +8,22 @@ DEFAULT_CONFIG_PATH = PROJECT_ROOT / "configs" / "logging_config.yaml"
 
 
 def setup_logging(config_path: Path = DEFAULT_CONFIG_PATH) -> None:
-    """ "Load YAML configutation file stored configs/logging_config.yaml"""
+    """Configure application logging from a YAML configuration file.
+
+    Loads the logging dictionary configuration from ``config_path``. For any
+    file-based handlers defined in the YAML file, relative paths are resolved
+    against ``PROJECT_ROOT`` and missing parent directories (such as ``logs/``)
+    are created automatically before applying ``logging.config.dictConfig``.
+    Falls back to ``logging.basicConfig(level=logging.INFO)`` if the
+    configuration file does not exist.
+
+    Args:
+        config_path (Path, optional): Path to the YAML logging configuration
+            file. Defaults to ``DEFAULT_CONFIG_PATH``.
+
+    Returns:
+        None
+    """
     if config_path.exists():
         with open(config_path, "r") as f:
             config = yaml.safe_load(f)

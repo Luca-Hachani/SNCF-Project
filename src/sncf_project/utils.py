@@ -4,12 +4,24 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-logger = logging.getLogger("utils")
+logger = logging.getLogger("sncf_project.utils")
 
 
 @st.cache_data
 def load_dataset(file_path: str, sep: str = ";") -> pd.DataFrame:
-    """ "Load a CSV et return"""
+    """Load a CSV file into a cached pandas DataFrame.
+
+    Reads the CSV file at ``file_path`` using ``sep`` as delimiter and caches
+    the result via ``@st.cache_data``. Logs descriptive errors and returns
+    ``None`` when the file is missing, empty, unreadable, or malformed.
+
+    Args:
+        file_path (str | Path): Path to the CSV file to load.
+        sep (str, optional): Column delimiter character. Defaults to ``";"``.
+
+    Returns:
+        pd.DataFrame | None: Loaded DataFrame if successful, otherwise ``None``.
+    """
     try:
         logger.info(f"Loading the dataset : {file_path}")
         df = pd.read_csv(file_path, sep=sep)
@@ -31,7 +43,28 @@ def load_dataset(file_path: str, sep: str = ";") -> pd.DataFrame:
 def find_closest_stations(
     df_stations_pos: pd.DataFrame, lon_lat: list[int], top_n: int = 1
 ) -> list[str]:
-    """Return the top_n closest stations from the geo position of the city"""
+    """Return the ``top_n`` closest station names to a given ``[lon, lat]`` point.
+
+    Computes squared Euclidean distance in ``(lon, lat)`` space between the
+    target city coordinates and each station in ``df_stations_pos``, returning
+    the nearest ``top_n`` station display names ordered from closest to farthest.
+
+    Args:
+        df_stations_pos (pd.DataFrame): DataFrame containing ``"lon"``,
+            ``"lat"``, and ``"display_name"`` columns.
+        lon_lat (Sequence[float]): Two-element sequence ``[lon, lat]``
+            representing the target city's longitude and latitude.
+        top_n (int, optional): Number of closest stations to return. Must be
+            at least ``1``. Defaults to ``1``.
+
+    Returns:
+        list[str]: Ordered list of up to ``top_n`` closest station display
+            names, or an empty list if ``df_stations_pos`` is empty.
+
+    Raises:
+        ValueError: If required columns are missing, ``lon_lat`` does not
+            contain two non-null coordinates, or ``top_n < 1``.
+    """
 
     required_cols = {"lon", "lat", "display_name"}
     missing_cols = required_cols - set(df_stations_pos.columns)
