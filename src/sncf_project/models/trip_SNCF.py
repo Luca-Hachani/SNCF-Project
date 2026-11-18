@@ -27,6 +27,8 @@ class Trip:
         The name of the arrival train station.
     _shortest_path : list, (set by set_shortest_path)
         The path with the fewest stations to the arrival train station.
+    _trip_reliability: float, (set by set_trip_reliability)
+        The reliability of the trip
     
     Class Attributes
     ----------------
@@ -51,6 +53,8 @@ class Trip:
         Returns the associated arrival airport.
     get_shortest_path() -> list of str
         Returns the precomputed shortest path.
+    get_trip_reliability() -> float
+        Returns the precomputed trip reliability.
     get_possible_arrival_stations() -> list of str
         Lists all possible arrival train stations matching the target arrival airport.
     get_path_to_target_station(target_station: str) -> list of str
@@ -67,6 +71,10 @@ class Trip:
     set_arrival_station() -> None
         Assigns the arrival station attribute using the last element 
         of the shortest path. 
+        !!! The shortest path has to be computed !!!
+    set_trip_reliability() -> None
+        Assigns the trip reliability attribute using reliability of rail links 
+        from the shortest path
         !!! The shortest path has to be computed !!!
 
     Notes
@@ -98,9 +106,14 @@ class Trip:
     #--------> The shortest path has been computed yet <--------
     trip.set_arrival_station()
 
-    #->6 : Retrieve values using getters :
+    #->6 : Compute and set the reliability of the trip
+    #--------> The shortest path has been computed yet <--------
+    trip.set_trip_reliability()
+
+    #->7 : Retrieve values using getters :
     selected_path = trip.get_shortest_path
     resolved_station = trip.get_arrival_station
+    reliability_computed = trip.get_trip_reliability
 
     """
     _departure_station: str
@@ -108,6 +121,7 @@ class Trip:
     _arrival_airport: str
     _arrival_station: str = None
     _shortest_path: list | None = None
+    _trip_reliability: float | None = None
 
     __df: pd.DataFrame = None
     __df_airport_seasonality: pd.DataFrame = None
@@ -228,6 +242,20 @@ class Trip:
         """
         # logger.debug("Getting shortest path for trip")
         return self._shortest_path
+
+    @property
+    def get_trip_reliability(self) -> float:
+        """
+        Returns the trip reliability.
+
+        Returns
+        -------
+        float
+            The product of the reliability of each rail links 
+            from the shortest path.
+        """
+        # logger.debug("Getting reliability for trip")
+        return self._trip_reliability
     
 
     # Methods
@@ -367,4 +395,28 @@ class Trip:
         else:
             # logger.warning("The shortest path has not been computed yet.")
             self._arrival_station = None
+
+    def set_trip_reliability(self) -> None:
+        """
+        Sets the trip reliability using reliability of the rail links 
+        from the shortest path
+
+        !!! The shortest path has to be computed !!!
+        """
+        if self._shortest_path and len(self._shortest_path) > 1:
+            rail_links = list(zip(self._shortest_path[:-1], self._shortest_path[1:]))
+            rail_links_reliability = []
+            for rail_link in rail_links:
+                dep_station = rail_link[0]
+                arr_station = rail_link[1]
+                df_rail_link = Trip.__df_rail_links[
+                    (Trip.__df_rail_links["Gare de départ"] == dep_station) & 
+                    (Trip.__df_rail_links["Gare d'arrivée"] == arr_station)
+                    ]
+                rail_links_reliability.append(df_rail_link["Fiabilité"].item())
+            self._trip_reliability = np.prod(rail_links_reliability)
+            # logger.debug(f"Trip reliability successfully set to: {self._arrival_station}")
+        else:
+            # logger.warning("The shortest path has not been computed yet.")
+            self._trip_reliability = None
     

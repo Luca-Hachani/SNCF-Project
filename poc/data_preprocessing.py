@@ -200,5 +200,7 @@ def rail_links(df):
         .drop_duplicates(subset=["Gare de départ", "Gare d'arrivée"])
         .reset_index(drop=True)
         )
+
+    df_rail_links["Fiabilité"] = 0.9
     
     return df_rail_links
