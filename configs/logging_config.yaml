@@ -17,11 +17,20 @@ handlers:
     formatter: info_formatter
     stream: ext://sys.stdout
 
-  info_file:
+  backend_file:
     class: logging.handlers.RotatingFileHandler
     level: INFO
     formatter: info_formatter
-    filename: "logs/info.log"
+    filename: "logs/backend.log"
+    maxBytes: 10485760  # 10 MB
+    backupCount: 2
+    encoding: "utf-8"
+  
+  frontend_file:
+    class: logging.handlers.RotatingFileHandler
+    level: INFO
+    formatter: info_formatter
+    filename: "logs/frontend.log"
     maxBytes: 10485760  # 10 MB
     backupCount: 2
     encoding: "utf-8"
@@ -36,14 +45,24 @@ handlers:
     encoding: "utf-8"
 
 loggers:
-  utils:
+  sncf_project.models:
     level: DEBUG
-    handlers: [console, info_file, error_file]
+    handlers: [console, backend_file, error_file]
     propagate: false
 
-  streamlit_app:
-    level: INFO
-    handlers: [console, info_file, error_file]
+  sncf_project.utils:
+    level: DEBUG
+    handlers: [console, backend_file, error_file]
+    propagate: false
+
+  sncf_project.app:
+    level: DEBUG
+    handlers: [console, frontend_file, error_file]
+    propagate: false
+
+  sncf_project.pages:
+    level: DEBUG
+    handlers: [console, frontend_file, error_file]
     propagate: false
 
 root:

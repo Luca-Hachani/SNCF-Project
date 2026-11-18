@@ -8,6 +8,13 @@ wheels/
 draft/
 logs/*
 
+#personal files
+/tmp
+
+#Test coverage
+.coverage
+.coverage.*
+
 #personal note 
 .memo.md
 
