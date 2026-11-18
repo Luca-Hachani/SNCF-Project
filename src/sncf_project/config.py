@@ -3,20 +3,29 @@ from pathlib import Path
 
 import yaml
 
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_CONFIG_PATH = PROJECT_ROOT / "configs" / "logging_config.yaml"
 
-def setup_logging():
+
+def setup_logging(config_path: Path = DEFAULT_CONFIG_PATH) -> None:
     """ "Load YAML configutation file stored configs/logging_config.yaml"""
-    config_path = Path("configs/logging_config.yaml")
     if config_path.exists():
         with open(config_path, "r") as f:
             config = yaml.safe_load(f)
-            logging.config.dictConfig(config)
+
+        # Create parent directories (e.g., logs/) for any file handlers before dictConfig runs
+        for handler in config.get("handlers", {}).values():
+            if "filename" in handler:
+                log_path = Path(handler["filename"])
+                if not log_path.is_absolute():
+                    log_path = PROJECT_ROOT / log_path
+                    handler["filename"] = str(log_path)
+                log_path.parent.mkdir(parents=True, exist_ok=True)
+
+        logging.config.dictConfig(config)
     else:
         logging.basicConfig(level=logging.INFO)
 
-
-# Initialize logging on import
-setup_logging()
 
 # PATH TO DATASETS
 DATASET_RE_MEN_TGV_PATH = "data/regularite-mensuelle-tgv-aqst.csv"

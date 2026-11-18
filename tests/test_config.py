@@ -4,6 +4,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
+import yaml
 
 from sncf_project.config import setup_logging
 
@@ -11,43 +12,47 @@ from sncf_project.config import setup_logging
 def test_setup_logging_when_file_exists(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Create a config file"""
-    configs = tmp_path / "configs"
-    configs.mkdir()
-    configs_file = configs / "logging_config.yaml"
-    configs_file.write_text(
-        "version: 1\ndisable_existing_loggers: false\nroot:\n   level: DEBUG\n",
-        encoding="utf-8",
+    """Create logs directory and read a config file"""
+    log_file = tmp_path / "logs" / "error.log"
+    config_file = tmp_path / "logging_config.yaml"
+    yaml_content = (
+        "version: 1\n"
+        "handlers:\n"
+        "  console:\n"
+        "    class: logging.StreamHandler\n"
+        "  error_file:\n"
+        "    class: logging.handlers.RotatingFileHandler\n"
+        f"    filename: {log_file.as_posix()}\n"
+        "root:\n"
+        "  level: DEBUG\n"
     )
+    config_file.write_text(yaml_content, encoding="utf-8")
 
-    """Change directory for the test"""
-    monkeypatch.chdir(tmp_path)
     mock_dict_config = MagicMock()
     monkeypatch.setattr(logging.config, "dictConfig", mock_dict_config)
 
     """Run the setup_logging()"""
+    setup_logging(config_path=config_file)
 
-    setup_logging()
+    assert log_file.parent.is_dir()
 
-    mock_dict_config.assert_called_once_with(
-        {
-            "version": 1,
-            "disable_existing_loggers": False,
-            "root": {"level": "DEBUG"},
-        }
-    )
+    mock_dict_config.assert_called_once_with(yaml.safe_load(yaml_content))
 
 
-def test_setup_logging_when_file_not_exist(
+
+
+
+
+
+def test_setup_logging_when_missing_config_file(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Change directory for the test"""
-    monkeypatch.chdir(tmp_path)
     mock_dict_config = MagicMock()
     monkeypatch.setattr(logging, "basicConfig", mock_dict_config)
 
     """Run the setup_logging()"""
 
-    setup_logging()
+    setup_logging(config_path=tmp_path / "missing_config.yaml")
 
     mock_dict_config.assert_called_once_with(level=logging.INFO)
