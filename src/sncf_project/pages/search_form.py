@@ -18,8 +18,8 @@ from sncf_project.config import (
     DATASET_COMMUNES_PATH,
     DATASET_RE_MEN_TGV_PATH,
     DATASET_STATIONS_PATH,
-    FRENCH_AIRPORTS,
 )
+from sncf_project.settings import STATION_TO_AIRPORT
 from sncf_project.models.traveler import Traveler
 from sncf_project.utils import load_dataset
 
@@ -108,10 +108,10 @@ def render_airport_form(df_communes: pd.DataFrame) -> Traveler | None:
     with st.form("airport_form", border=True):
         st.subheader("Schedule your perfect train ticket!")
 
+        airport_options = sorted(set(STATION_TO_AIRPORT.values()))
         departure_airport = st.selectbox(
             "Airport Departure",
-            options=list(FRENCH_AIRPORTS.keys()),
-            format_func=lambda code: FRENCH_AIRPORTS[code]["name"],
+            options=airport_options,
             index=None,
             placeholder="Write down the airport name or IATA code (ex: CDG, LYS..)",
         )
@@ -152,7 +152,7 @@ def render_airport_form(df_communes: pd.DataFrame) -> Traveler | None:
                     date : {trip_date} \n \
                     departure city : {departure_city}"
         )
-        return Traveler(FRENCH_AIRPORTS[departure_airport], trip_date, departure_city)
+        return Traveler(departure_airport, trip_date, departure_city)
 
     return None
 
