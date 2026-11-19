@@ -17,7 +17,9 @@ from streamlit_geolocation import streamlit_geolocation
 
 from sncf_project.models.traveler import Traveler
 from sncf_project.models.trip_SNCF import Trip
-from sncf_project.pages.render_trip_recommendations import render_trip_recommendations
+from sncf_project.pages.components.render_trip_recommendations import (
+    render_trip_recommendations,
+)
 from sncf_project.settings import (
     DATASET_COMMUNES_PATH,
     DATASET_RELIABLE_PATH,
@@ -195,7 +197,7 @@ def main() -> None:
             Trip.load_datasets()
             time.sleep(1)
             routes: list[tuple[list[str], float]] = []
-            for idx, departure_station in range(traveler.get_departure_station):
+            for idx in range(len(traveler.get_departure_station)):
                 trip = Trip(
                     _departure_station=traveler.get_departure_station[idx],
                     _trip_date=traveler.get_trip_date,

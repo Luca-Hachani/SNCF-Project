@@ -1,8 +1,16 @@
 import logging
+import re
 
 import streamlit as st
 
-logger = logging.getLogger("sncf_project.pages.render_trip_recommendations")
+logger = logging.getLogger("sncf_project.pages.components.render_trip_recommendations")
+
+
+def starts_with_paris_transfer(path: list[str]) -> bool:
+    """Return True if the route starts with a transfer between two Parisian stations."""
+    if len(path) < 2:
+        return False
+    return all(re.search(r"\bparis\b", station, re.IGNORECASE) for station in path[:2])
 
 
 def render_trip_recommendations(
@@ -17,7 +25,9 @@ def render_trip_recommendations(
         target_airport (str): Name of the destination airport.
     """
     valid_routes = [
-        (path, float(score)) for path, score in routes if path and score is not None
+        (path, float(score))
+        for path, score in routes
+        if path and score is not None and not starts_with_paris_transfer(path)
     ]
 
     if not valid_routes:
