@@ -162,18 +162,9 @@ class Trip:
         """
 
         base_dir = pathlib.Path(__file__).resolve().parents[3]
-
-        # Définition des chemins par défaut s'ils ne sont pas spécifiés
-        if df_path is None:
-            df_path = base_dir / "data" / "processed_df.csv"
-        if seasonality_path is None:
-            seasonality_path = (
-                base_dir / "data" / "processed_airport_seasonality.csv"
-            )
         if links_path is None:
             links_path = base_dir / "data" / "df_rail_links.csv"
 
-        # Chargement effectif des datasets
         logger.debug("Loading preprocessed datasets for Trip at class level")
 
         if not hasattr(cls, "__df_rail_links") or cls.__df_rail_links is None:

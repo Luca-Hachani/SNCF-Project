@@ -1,13 +1,19 @@
-import pytest
-import pandas as pd
 from unittest.mock import patch
+
+import pandas as pd
+import pytest
+
+import sncf_project.settings as settings
+
 # from trip_SNCF import Trip
 from sncf_project.models.trip_SNCF import Trip
-import sncf_project.settings as settings
+
 
 @pytest.fixture(autouse=True)
 def reset_trip_class_attributes():
-    """Réinitialise les attributs de classe avant et après chaque test."""
+    """
+    Reset class attributes before and after each test.
+    """
     Trip._Trip__df_rail_links = None
     yield
     Trip._Trip__df_rail_links = None
@@ -16,7 +22,10 @@ def reset_trip_class_attributes():
 # Test init and Getters in a row
 
 def test_trip_initialization_and_getters():
-    """Vérifie l'initialisation de l'objet Trip et le bon fonctionnement des getters de base."""
+    """
+    Verify Trip object initialization and proper behavior of basic 
+    getters.
+    """
     trip = Trip(
         _departure_station="MARSEILLE-STATION-TEST",
         _trip_date="1789-07-14",
@@ -29,11 +38,11 @@ def test_trip_initialization_and_getters():
     assert trip.get_shortest_path is None
 
 
-# Test load_datasets()
+# Test load_datasets()
 
 def test_load_datasets():
     """
-    Vérifie le chargement du dataset des liaisons ferroviaires via load_datasets.
+    Verify loading of the rail links dataset via load_datasets.
     """
     mock_df = pd.DataFrame({
         "Gare de départ": ["MARSEILLE-STATION-TEST"],
@@ -52,14 +61,19 @@ def test_load_datasets():
 
 def test_get_possible_arrival_stations():
     """
-    Vérifie la récupération des gares d'arrivée associées à un aéroport cible.
+    Verify retrieval of arrival train stations associated with a target 
+    airport.
     """
     trip = Trip(
         _departure_station="MARSEILLE-STATION-TEST",
         _trip_date="1789-07-14",
         _arrival_airport="PARIS-AIRPORT-TEST"
         )
-    with patch.dict(settings.STATION_TO_AIRPORT, {"PARIS-STATION-TEST": "PARIS-AIRPORT-TEST"}, clear=True):
+    with patch.dict(
+        settings.STATION_TO_AIRPORT, 
+        {"PARIS-STATION-TEST": "PARIS-AIRPORT-TEST"}, 
+        clear=True
+        ):
         stations = trip.get_possible_arrival_stations()
         assert stations == ["PARIS-STATION-TEST"]
 
@@ -68,7 +82,7 @@ def test_get_possible_arrival_stations():
 
 def test_get_path_to_target_station_not_loaded():
     """
-    Vérifie qu'une exception ValueError est levée si le dataset n'est pas chargé.
+    Verify that a ValueError is raised when the dataset is not loaded.
     """
     trip = Trip(
         _departure_station="MARSEILLE-STATION-TEST",
@@ -80,7 +94,8 @@ def test_get_path_to_target_station_not_loaded():
 
 def test_get_path_to_target_station_success_and_no_path():
     """
-    Vérifie le calcul du chemin le plus court (succès) et la gestion d'un chemin inexistant.
+    Verify shortest path calculation (success) and handling of an 
+    unreachable path.
     """
     df_links = pd.DataFrame({
         "Gare de départ": [
@@ -141,10 +156,12 @@ def test_get_path_to_target_station_success_and_no_path():
 
 def test_get_all_paths_and_set_shortest_path_and_arrival():
     """
-    Vérifie la sélection du chemin le plus court en nombre de stops et la mise à jour de la gare d'arrivée.
+    Verify selection of the shortest path by number of stops and 
+    updating of the arrival station.
     """
     # Path 1: "MARSEILLE-STATION-TEST" -> PARIS-STATION_1-TEST (1 rail link), 
-    # Path 2: "MARSEILLE-STATION-TEST" -> PARIS-STATION_1-TEST -> PARIS-STATION_2-TEST  (2 rail links)
+    # Path 2: "MARSEILLE-STATION-TEST" -> PARIS-STATION_1-TEST 
+    #         -> PARIS-STATION_2-TEST  (2 rail links)
     df_links = pd.DataFrame({
         "Gare de départ": [
             "MARSEILLE-STATION-TEST",
@@ -182,9 +199,13 @@ def test_get_all_paths_and_set_shortest_path_and_arrival():
         paths = trip.get_all_paths_to_possible_arrival_stations()
         assert len(paths) == 2
         
-        # Test set_shortest_path (doit choisir le chemin direct le plus court en nombre de stations : ["MARSEILLE-STATION-TEST", "PARIS-STATION_1-TEST"])
+        # Test set_shortest_path (doit choisir 
+        # le chemin direct le plus court en nombre de stations : 
+        # ["MARSEILLE-STATION-TEST", "PARIS-STATION_1-TEST"])
         trip.set_shortest_path()
-        assert trip.get_shortest_path == ["MARSEILLE-STATION-TEST", "PARIS-STATION_1-TEST"]
+        assert trip.get_shortest_path == ["MARSEILLE-STATION-TEST", 
+                                          "PARIS-STATION_1-TEST"
+                                          ]
         
         # Test set_arrival_station
         trip.set_arrival_station()
@@ -195,14 +216,17 @@ def test_get_all_paths_and_set_shortest_path_and_arrival():
 
 def test_set_shortest_path_no_paths_found():
     """
-    Vérifie le comportement lorsque aucun chemin valide n'est trouvé.
+    Verify behavior when no valid path is found.
     """
     Trip._Trip__df_rail_links = pd.DataFrame({
         "Gare de départ": ["MARSEILLE-STATION-TEST"],
         "Gare d'arrivée": ["LYON-STATION-TEST"],
         "Durée moyenne du trajet": [180]
     })
-    with patch.dict(settings.STATION_TO_AIRPORT, {"PARIS-STATION-TEST": "PARIS-AIRPORT-TEST"}):
+    with patch.dict(
+        settings.STATION_TO_AIRPORT, 
+        {"PARIS-STATION-TEST": "PARIS-AIRPORT-TEST"}
+        ):
         trip = Trip(
             _departure_station="MARSEILLE-STATION-TEST",
             _trip_date="1789-07-14",
@@ -218,8 +242,8 @@ def test_set_shortest_path_no_paths_found():
 
 def test_set_arrival_station_without_shortest_path():
     """
-    Vérifie qu'il est impossible de définir la gare d'arrivée 
-    si _shortest_path n'a pas été calculé (vaut None).
+    Verify that the arrival station cannot be set when _shortest_path 
+    has not been computed (is None).
     """
     trip = Trip(
         _departure_station="MARSEILLE-STATION-TEST",
