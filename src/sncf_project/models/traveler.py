@@ -125,7 +125,12 @@ class Traveler:
 
         # Match stations with geoloc from 2 SNCF datasets without mutating inputs
         clean_reg_stations = (
-            df_reg["Gare de départ"].dropna().str.upper().str.strip().unique()
+            df_reg[["Gare de départ"]]
+            .dropna()
+            .assign(
+                clean_station=lambda df: df["Gare de départ"].str.upper().str.strip()
+            )
+            .drop_duplicates(subset=["clean_station"])
         )
 
         clean_stations = pd.DataFrame(
@@ -146,10 +151,16 @@ class Traveler:
         )
 
         df_unique_pos = (
-            clean_stations[clean_stations["clean_station"].isin(clean_reg_stations)]
-            .dropna(subset=["lon", "lat", "display_name"])
+            clean_stations.merge(clean_reg_stations, on="clean_station", how="inner")
+            .dropna(subset=["lon", "lat", "display_name", "Gare de départ"])
             .groupby("display_name", as_index=False)
-            .agg({"lon": "mean", "lat": "mean"})
+            .agg(
+                {
+                    "lon": "mean",
+                    "lat": "mean",
+                    "Gare de départ": "first",
+                }
+            )
         )
 
         self.__departure_station = find_closest_stations(
