@@ -35,7 +35,12 @@ dev = [
 ]
 
 [tool.ruff]
+line-length = 79
 exclude = ["poc"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "RUF"]
+ignore = ["E203"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
