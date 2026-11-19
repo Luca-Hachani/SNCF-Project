@@ -6,7 +6,7 @@ import pandas as pd
 import pydeck as pdk
 import streamlit as st
 
-logger = logging.getLogger("sncf_project.pages.map_stations")
+logger = logging.getLogger("sncf_project.pages.components.map_stations")
 
 
 def render_map_stations(df_reg: pd.DataFrame, df_stations) -> None:

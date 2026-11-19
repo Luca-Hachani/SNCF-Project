@@ -9,8 +9,10 @@ import logging
 import plotly.express as px
 import streamlit as st
 
-from sncf_project.pages.map_stations import render_map_stations
-from sncf_project.pages.render_df_visualisation import render_df_visualisation
+from sncf_project.pages.components.map_stations import render_map_stations
+from sncf_project.pages.components.render_df_visualisation import (
+    render_df_visualisation,
+)
 from sncf_project.settings import (
     DATASET_RE_MEN_TGV_PATH,
     DATASET_STATIONS_PATH,

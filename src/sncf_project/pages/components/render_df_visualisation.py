@@ -11,7 +11,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-logger = logging.getLogger("sncf_project.pages.render_df_visualisation")
+logger = logging.getLogger("sncf_project.pages.components.render_df_visualisation")
 
 
 def render_df_visualisation(df_reg: pd.DataFrame) -> None:
