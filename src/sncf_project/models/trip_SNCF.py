@@ -1,10 +1,8 @@
+import logging
 import pathlib
 from dataclasses import dataclass
-from itertools import permutations
 
 import networkx as nx
-
-import logging
 import numpy as np
 import pandas as pd
 
