@@ -1,4 +1,8 @@
-DATA_PATH = 'data/regularite-mensuelle-tgv-aqst.csv'
+# PATH TO DATASETS
+DATASET_RE_MEN_TGV_PATH = "data/regularite-mensuelle-tgv-aqst.csv"
+DATASET_STATIONS_PATH = "data/liste-des-gares.csv"
+DATASET_COMMUNES_PATH = "data/liste-communes-France.csv"
+DATASET_RELIABLE_PATH = "data/data_reliable.csv"
 
 
 TRIP_MULTI_COLUMNS = [

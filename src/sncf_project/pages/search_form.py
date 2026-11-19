@@ -7,6 +7,7 @@ TGV departure stations for the traveler.
 
 import datetime
 import logging
+import time
 from zoneinfo import ZoneInfo
 
 import numpy as np
@@ -14,13 +15,15 @@ import pandas as pd
 import streamlit as st
 from streamlit_geolocation import streamlit_geolocation
 
-from sncf_project.config import (
-    DATASET_COMMUNES_PATH,
-    DATASET_RE_MEN_TGV_PATH,
-    DATASET_STATIONS_PATH,
-)
-from sncf_project.settings import STATION_TO_AIRPORT
 from sncf_project.models.traveler import Traveler
+from sncf_project.models.trip_SNCF import Trip
+from sncf_project.pages.render_trip_recommendations import render_trip_recommendations
+from sncf_project.settings import (
+    DATASET_COMMUNES_PATH,
+    DATASET_RELIABLE_PATH,
+    DATASET_STATIONS_PATH,
+    STATION_TO_AIRPORT,
+)
 from sncf_project.utils import load_dataset
 
 logger = logging.getLogger("sncf_project.pages.search_form")
@@ -113,7 +116,7 @@ def render_airport_form(df_communes: pd.DataFrame) -> Traveler | None:
             "Airport Departure",
             options=airport_options,
             index=None,
-            placeholder="Write down the airport name or IATA code (ex: CDG, LYS..)",
+            placeholder="Write down the airport name",
         )
 
         col_date, col_train_station = st.columns([2, 3])
@@ -160,7 +163,7 @@ def render_airport_form(df_communes: pd.DataFrame) -> Traveler | None:
 def main() -> None:
     """Load datasets, render the trip search form, and compute departure stations."""
     df_communes = load_dataset(DATASET_COMMUNES_PATH, sep=",")
-    df_reg = load_dataset(DATASET_RE_MEN_TGV_PATH)
+    df_reg = load_dataset(DATASET_RELIABLE_PATH, sep=",")
     df_stations = load_dataset(DATASET_STATIONS_PATH)
 
     if df_communes is None or df_reg is None or df_stations is None:
@@ -187,8 +190,29 @@ def main() -> None:
             st.stop()
 
         logger.info("Traveler info %s", traveler)
+
         with st.spinner("Finding your best rides..."):
-            st.markdown(f"{traveler.get_departure_station}")
+            Trip.load_datasets()
+            time.sleep(1)
+            routes: list[tuple[list[str], float]] = []
+            for idx, departure_station in range(traveler.get_departure_station):
+                trip = Trip(
+                    _departure_station=traveler.get_departure_station[idx],
+                    _trip_date=traveler.get_trip_date,
+                    _arrival_airport=traveler.get_departure_airport,
+                )
+                trip.set_shortest_path()
+                trip.set_arrival_station()
+                trip.set_trip_reliability()
+                logger.info(
+                    f"shortest path: {trip.get_shortest_path} and reliability : {trip.get_trip_reliability}"
+                )
+                if trip.get_shortest_path and trip.get_trip_reliability is not None:
+                    routes.append(
+                        (trip.get_shortest_path, float(trip.get_trip_reliability))
+                    )
+
+            render_trip_recommendations(routes, traveler.get_departure_airport)
 
 
 if __name__ == "__main__":

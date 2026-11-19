@@ -66,7 +66,7 @@ def find_closest_stations(
             contain two non-null coordinates, or ``top_n < 1``.
     """
 
-    required_cols = {"lon", "lat", "display_name"}
+    required_cols = {"lon", "lat", "Gare de départ"}
     missing_cols = required_cols - set(df_stations_pos.columns)
 
     if missing_cols:
@@ -92,4 +92,6 @@ def find_closest_stations(
 
     top_indices = np.argsort(distance)[:top_n]
 
-    return df_stations_pos.iloc[top_indices]["display_name"].astype(str).tolist()
+    logger.info(df_stations_pos.iloc[top_indices].head(10))
+
+    return df_stations_pos.iloc[top_indices]["Gare de départ"].astype(str).tolist()
