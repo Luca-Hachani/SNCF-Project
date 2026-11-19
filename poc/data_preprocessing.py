@@ -159,15 +159,14 @@ def airport_seasonality(df):
 def rail_links(df):
     # Extraction de toutes les liaisons uniques (Gare de départ -> Gare d'arrivée)
     df_rail_links = (
-        df[[("Contexte", "Gare de départ"), ("Contexte", "Gare d'arrivée"), ("Contexte", "Durée moyenne du trajet")]]
+        df[["Gare de départ", "Gare d'arrivée", "Durée moyenne du trajet", "Fiabilité"]]
         .drop_duplicates()
         .reset_index(drop=True)
         )
-    df_rail_links.columns = ["Gare de départ", "Gare d'arrivée", "Durée moyenne du trajet"]
 
     # Extraction directe et unique des gares d'Île-de-France
     idf_stations = (
-        df[df[("Contexte", "Région de départ")] == "Île-de-France"][("Contexte", "Gare de départ")]
+        df[df["Région de départ"] == "Île-de-France"]["Gare de départ"]
         .drop_duplicates()
         .sort_values()
         .tolist()
@@ -180,6 +179,7 @@ def rail_links(df):
         columns=["Gare de départ", "Gare d'arrivée"]
         )
     idf_links["Durée moyenne du trajet"] = 30
+    idf_links["Fiabilité"] = 0.9
 
     # Génération des liaisons TOURCOING <-> LILLE
     north_links = pd.DataFrame(
@@ -187,6 +187,7 @@ def rail_links(df):
         columns=["Gare de départ", "Gare d'arrivée"]
         )
     north_links["Durée moyenne du trajet"] = 30
+    north_links["Fiabilité"] = 0.9
 
     # Fusion de idf_links avec north_links
     new_links = (
@@ -201,6 +202,56 @@ def rail_links(df):
         .reset_index(drop=True)
         )
 
-    df_rail_links["Fiabilité"] = 0.9
+    # df_rail_links["Fiabilité"] = 0.9
     
     return df_rail_links
+
+# def rail_links(df):
+#     # Extraction de toutes les liaisons uniques (Gare de départ -> Gare d'arrivée)
+#     df_rail_links = (
+#         df[[("Contexte", "Gare de départ"), ("Contexte", "Gare d'arrivée"), ("Contexte", "Durée moyenne du trajet")]]
+#         .drop_duplicates()
+#         .reset_index(drop=True)
+#         )
+#     df_rail_links.columns = ["Gare de départ", "Gare d'arrivée", "Durée moyenne du trajet"]
+
+#     # Extraction directe et unique des gares d'Île-de-France
+#     idf_stations = (
+#         df[df[("Contexte", "Région de départ")] == "Île-de-France"][("Contexte", "Gare de départ")]
+#         .drop_duplicates()
+#         .sort_values()
+#         .tolist()
+#         )
+
+#     # Génération de toutes les liaisons intrarégionale d'île de France 
+#     idf_pairs = list(permutations(idf_stations, 2))
+#     idf_links = pd.DataFrame(
+#         idf_pairs, 
+#         columns=["Gare de départ", "Gare d'arrivée"]
+#         )
+#     idf_links["Durée moyenne du trajet"] = 30
+
+#     # Génération des liaisons TOURCOING <-> LILLE
+#     north_links = pd.DataFrame(
+#         [("TOURCOING", "LILLE"), ("LILLE", "TOURCOING")], 
+#         columns=["Gare de départ", "Gare d'arrivée"]
+#         )
+#     north_links["Durée moyenne du trajet"] = 30
+
+#     # Fusion de idf_links avec north_links
+#     new_links = (
+#         pd.concat([idf_links, north_links], ignore_index=True)
+#         .reset_index(drop=True)
+#         )
+
+#     # Fusion avec df_rail_links et nettoyage des doublons
+#     df_rail_links = (
+#         pd.concat([df_rail_links, new_links], ignore_index=True)
+#         .drop_duplicates(subset=["Gare de départ", "Gare d'arrivée"])
+#         .reset_index(drop=True)
+#         )
+
+#     # df_rail_links["Fiabilité"] = 0.9
+    
+#     return df_rail_links
+
