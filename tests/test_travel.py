@@ -70,9 +70,9 @@ def test_compute_departure_station_finds_top_3_and_does_not_mutate_inputs(
     traveler.compute_departure_station(df_reg, df_stations, df_communes)
 
     assert traveler.get_departure_station == [
-        "Caen",
-        "Rennes",
-        "Paris-Montparnasse",
+        "CAEN",
+        "RENNES",
+        "PARIS MONTPARNASSE",
     ]
     assert list(df_reg.columns) == reg_cols_before
     assert list(df_stations.columns) == stations_cols_before

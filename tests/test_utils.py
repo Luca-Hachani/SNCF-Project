@@ -61,6 +61,7 @@ def sample_df_stations() -> pd.DataFrame:
     return pd.DataFrame(
         {
             "display_name": ["GRENOBLE", "ANNECY", "LYON-PART-DIEU"],
+            "Gare de départ": ["GRENOBLE", "ANNECY", "LYON PART DIEU"],
             "lon": [5.714309, 6.121833, 4.860201],
             "lat": [45.191284, 45.902211, 45.760541],
         }
@@ -83,7 +84,7 @@ def test_find_closest_station_top_n(sample_df_stations: pd.DataFrame) -> None:
 
     result = find_closest_stations(sample_df_stations, echirolles_coords, top_n=3)
 
-    assert result == ["GRENOBLE", "ANNECY", "LYON-PART-DIEU"]
+    assert result == ["GRENOBLE", "ANNECY", "LYON PART DIEU"]
 
 
 def test_find_closest_station_top_n_exceding(sample_df_stations: pd.DataFrame) -> None:
@@ -98,7 +99,9 @@ def test_find_closest_station_top_n_exceding(sample_df_stations: pd.DataFrame) -
 
 def test_find_closest_stations_empty_df() -> None:
     """Empty df_stations"""
-    sample_df_stations = pd.DataFrame(columns=["display_name", "lon", "lat"])
+    sample_df_stations = pd.DataFrame(
+        columns=["display_name", "lon", "lat", "Gare de départ"]
+    )
     echirolles_coords = [5.7147828, 45.1441357]
     result = find_closest_stations(sample_df_stations, echirolles_coords, top_n=1)
 
