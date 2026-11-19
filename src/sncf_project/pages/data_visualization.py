@@ -40,10 +40,6 @@ st.subheader("Explore the Dataset !")
 
 st.subheader("Preview of some rows..")
 
-st.divider()
-
-render_df_visualisation(df_reg)
-
 view_mode = st.radio(
     "Choose the rows..",
     ["First 10 rows", "Sample of 10 rows"],
@@ -89,3 +85,5 @@ st.divider()
 render_map_stations(df_reg, df_stations)
 
 st.divider()
+
+render_df_visualisation(df_reg)

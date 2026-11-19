@@ -41,7 +41,7 @@ st.set_page_config(
     layout="wide",
 )
 
-logger.info("Application started")
+logger.info("Application started on user side")
 
 # Register pages in the left sidebar menu
 pg = st.navigation(
