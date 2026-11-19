@@ -1,138 +1,9 @@
 import pandas as pd
-
-multi_columns = [
-    # Contexte et Identification de la Liaison
-    ("Contexte", "Date"),
-    ("Contexte", "Service"),
-    ("Contexte", "Gare de départ"),
-    ("Contexte", "Gare d'arrivée"),
-    ("Contexte", "Durée moyenne du trajet"),
-    # Volumes et Annulations
-    ("Volumes & Annulations", "Nombre de circulations prévues"),
-    ("Volumes & Annulations", "Nombre de trains annulés"),
-    ("Volumes & Annulations", "Commentaire annulations"),
-    # Départ (retard)
-    ("Départ (retard)", "Nombre de trains en retard au départ"),
-    ("Départ (retard)", "Retard moyen des trains en retard au départ"),
-    ("Départ (retard)", "Retard moyen de tous les trains au départ"),
-    ("Départ (retard)", "Commentaire retards au départ"),
-    # Arrivée (retard)
-    ("Arrivée (retard)", "Nombre de trains en retard à l'arrivée"),
-    ("Arrivée (retard)", "Retard moyen des trains en retard à l'arrivée"),
-    ("Arrivée (retard)", "Retard moyen de tous les trains à l'arrivée"),
-    ("Arrivée (retard)", "Commentaire retards à l'arrivée"),
-    ("Arrivée (retard)", "Nombre trains en retard > 15min"),
-    (
-        "Arrivée (retard)",
-        "Retard moyen trains en retard > 15 (si liaison concurrencée par vol)",
-    ),
-    ("Arrivée (retard)", "Nombre trains en retard > 30min"),
-    ("Arrivée (retard)", "Nombre trains en retard > 60min"),
-    # Causes en % (Retard)
-    ("Causes en % (Retard)", "Prct retard pour causes externes"),
-    ("Causes en % (Retard)", "Prct retard pour cause infrastructure"),
-    ("Causes en % (Retard)", "Prct retard pour cause gestion trafic"),
-    ("Causes en % (Retard)", "Prct retard pour cause matériel roulant"),
-    (
-        "Causes en % (Retard)",
-        "Prct retard pour cause gestion en gare et réutilisation de matériel",
-    ),
-    (
-        "Causes en % (Retard)",
-        "Prct retard pour cause prise en compte voyageurs (affluence, gestions PSH, correspondances)",
-    ),
-]
+from itertools import permutations
+from settings import TRIP_MULTI_COLUMNS, REGION_MAPPING, STATION_TO_AIRPORT
 
 
-region_mapping = {
-    "AIX EN PROVENCE TGV": "Provence-Alpes-Côte d'Azur",
-    "ANGERS SAINT LAUD": "Pays de la Loire",
-    "ANGOULEME": "Nouvelle-Aquitaine",
-    "ANNECY": "Auvergne-Rhône-Alpes",
-    "ARRAS": "Hauts-de-France",
-    "AVIGNON TGV": "Provence-Alpes-Côte d'Azur",
-    "BARCELONA": "International (Espagne)",
-    "BELLEGARDE (AIN)": "Auvergne-Rhône-Alpes",
-    "BESANCON FRANCHE COMTE TGV": "Bourgogne-Franche-Comté",
-    "BORDEAUX ST JEAN": "Nouvelle-Aquitaine",
-    "BREST": "Bretagne",
-    "CHAMBERY CHALLES LES EAUX": "Auvergne-Rhône-Alpes",
-    "DIJON VILLE": "Bourgogne-Franche-Comté",
-    "DOUAI": "Hauts-de-France",
-    "DUNKERQUE": "Hauts-de-France",
-    "FRANCFORT": "International (Allemagne)",
-    "GENEVE": "International (Suisse)",
-    "GRENOBLE": "Auvergne-Rhône-Alpes",
-    "ITALIE": "International (Italie)",
-    "LA ROCHELLE VILLE": "Nouvelle-Aquitaine",
-    "LAUSANNE": "International (Suisse)",
-    "LAVAL": "Pays de la Loire",
-    "LE CREUSOT MONTCEAU MONTCHANIN": "Bourgogne-Franche-Comté",
-    "LE MANS": "Pays de la Loire",
-    "LILLE": "Hauts-de-France",
-    "LYON PART DIEU": "Auvergne-Rhône-Alpes",
-    "MACON LOCHE": "Bourgogne-Franche-Comté",
-    "MADRID": "International (Espagne)",
-    "MARNE LA VALLEE": "Île-de-France",
-    "MARSEILLE ST CHARLES": "Provence-Alpes-Côte d'Azur",
-    "METZ": "Grand Est",
-    "MONTPELLIER": "Occitanie",
-    "MULHOUSE VILLE": "Grand Est",
-    "NANCY": "Grand Est",
-    "NANTES": "Pays de la Loire",
-    "NICE VILLE": "Provence-Alpes-Côte d'Azur",
-    "NIMES": "Occitanie",
-    "PARIS EST": "Île-de-France",
-    "PARIS LYON": "Île-de-France",
-    "PARIS MONTPARNASSE": "Île-de-France",
-    "PARIS NORD": "Île-de-France",
-    "PARIS VAUGIRARD": "Île-de-France",
-    "PERPIGNAN": "Occitanie",
-    "POITIERS": "Nouvelle-Aquitaine",
-    "QUIMPER": "Bretagne",
-    "REIMS": "Grand Est",
-    "RENNES": "Bretagne",
-    "SAINT ETIENNE CHATEAUCREUX": "Auvergne-Rhône-Alpes",
-    "ST MALO": "Bretagne",
-    "ST PIERRE DES CORPS": "Centre-Val de Loire",
-    "STRASBOURG": "Grand Est",
-    "STUTTGART": "International (Allemagne)",
-    "TOULON": "Provence-Alpes-Côte d'Azur",
-    "TOULOUSE MATABIAU": "Occitanie",
-    "TOURCOING": "Hauts-de-France",
-    "TOURS": "Centre-Val de Loire",
-    "VALENCE ALIXAN TGV": "Auvergne-Rhône-Alpes",
-    "VANNES": "Bretagne",
-    "ZURICH": "International (Suisse)",
-}
-
-station_to_airport = {
-    # Hubs régionaux
-    "MARSEILLE ST CHARLES": "MARSEILLE PROVENCE",
-    "NICE VILLE": "NICE CÔTE D'AZUR",
-    "LYON PART DIEU": "LYON SAINT-EXUPÉRY",
-    "STRASBOURG": "STRASBOURG-ENTZHEIM",
-    "NANTES": "NANTES ATLANTIQUE",
-    "BORDEAUX ST JEAN": "BORDEAUX-MÉRIGNAC",
-    "TOULOUSE MATABIAU": "TOULOUSE-BLAGNAC",
-    "RENNES": "RENNES SAINT-JACQUES",
-    "MONTPELLIER": "MONTPELLIER-MÉDITERRANÉE",
-    "MULHOUSE VILLE": "EUROAIRPORT BASEL-MULHOUSE-FREIBURG",
-    # Hub parisien
-    "PARIS EST": "PARIS-ORLY / PARIS-CHARLES-DE-GAULLE",
-    "PARIS LYON": "PARIS-ORLY / PARIS-CHARLES-DE-GAULLE",
-    "PARIS MONTPARNASSE": "PARIS-ORLY / PARIS-CHARLES-DE-GAULLE",
-    "PARIS NORD": "PARIS-ORLY / PARIS-CHARLES-DE-GAULLE",
-    "PARIS VAUGIRARD": "PARIS-ORLY / PARIS-CHARLES-DE-GAULLE",
-    # Gares internationales majeures
-    "FRANCFORT": "AÉROPORT DE FRANCFORT",
-    "ZURICH": "AÉROPORT DE ZURICH",
-    "GENEVE": "AÉROPORT DE GENÈVE",
-    "BARCELONA": "AÉROPORT DE BARCELONE-EL PRAT",
-}
-
-
-def preprocessing(df, columns_order=multi_columns, columns_drop_idx=(7, 11, 17)):
+def preprocessing(df, columns_order=TRIP_MULTI_COLUMNS, columns_drop_idx=(7, 11, 17)):
     df.columns = pd.MultiIndex.from_tuples(columns_order)
     # datetime format
     df[("Contexte", "Date")] = pd.to_datetime(
@@ -171,7 +42,7 @@ def enrichment(df):
         df.insert(
             loc=index + 1,
             column=("Contexte", "Région de départ"),
-            value=df[("Contexte", "Gare de départ")].map(region_mapping),
+            value=df[("Contexte", "Gare de départ")].map(REGION_MAPPING),
         )
         df[("Contexte", "Région de départ")] = df[
             ("Contexte", "Région de départ")
@@ -183,7 +54,7 @@ def enrichment(df):
         df.insert(
             loc=index + 2,
             column=("Contexte", "Région d'arrivée"),
-            value=df[("Contexte", "Gare d'arrivée")].map(region_mapping),
+            value=df[("Contexte", "Gare d'arrivée")].map(REGION_MAPPING),
         )
         df[("Contexte", "Région d'arrivée")] = df[
             ("Contexte", "Région d'arrivée")
@@ -191,7 +62,7 @@ def enrichment(df):
 
     # Création d'une nouvelle colonne "Correspondance avec aéroport" dans le DataFrame
     index = df.columns.get_loc(("Contexte", "Région d'arrivée"))
-    station_with_airport = list(station_to_airport.keys())
+    station_with_airport = list(STATION_TO_AIRPORT.keys())
     if not ("Contexte", "Correspondance avec aéroport") in df.columns:
         print('ajout de la colonne "Correspondance avec aéroport"')
         df.insert(
@@ -206,7 +77,7 @@ def enrichment(df):
         print('Ajout de la colonne "Aéroport"')
         airport_values = df.apply(
             lambda row: (
-                station_to_airport.get(row[("Contexte", "Gare d'arrivée")])
+                STATION_TO_AIRPORT.get(row[("Contexte", "Gare d'arrivée")])
                 if row[("Contexte", "Correspondance avec aéroport")]
                 else None
             ),
@@ -283,3 +154,51 @@ def airport_seasonality(df):
         .reset_index()
     )
     return df_airport_seasonality
+
+
+def rail_links(df):
+    # Extraction de toutes les liaisons uniques (Gare de départ -> Gare d'arrivée)
+    df_rail_links = (
+        df[[("Contexte", "Gare de départ"), ("Contexte", "Gare d'arrivée"), ("Contexte", "Durée moyenne du trajet")]]
+        .drop_duplicates()
+        .reset_index(drop=True)
+        )
+    df_rail_links.columns = ["Gare de départ", "Gare d'arrivée", "Durée moyenne du trajet"]
+
+    # Extraction directe et unique des gares d'Île-de-France
+    idf_stations = (
+        df[df[("Contexte", "Région de départ")] == "Île-de-France"][("Contexte", "Gare de départ")]
+        .drop_duplicates()
+        .sort_values()
+        .tolist()
+        )
+
+    # Génération de toutes les liaisons intrarégionale d'île de France 
+    idf_pairs = list(permutations(idf_stations, 2))
+    idf_links = pd.DataFrame(
+        idf_pairs, 
+        columns=["Gare de départ", "Gare d'arrivée"]
+        )
+    idf_links["Durée moyenne du trajet"] = 30
+
+    # Génération des liaisons TOURCOING <-> LILLE
+    north_links = pd.DataFrame(
+        [("TOURCOING", "LILLE"), ("LILLE", "TOURCOING")], 
+        columns=["Gare de départ", "Gare d'arrivée"]
+        )
+    north_links["Durée moyenne du trajet"] = 30
+
+    # Fusion de idf_links avec north_links
+    new_links = (
+        pd.concat([idf_links, north_links], ignore_index=True)
+        .reset_index(drop=True)
+        )
+
+    # Fusion avec df_rail_links et nettoyage des doublons
+    df_rail_links = (
+        pd.concat([df_rail_links, new_links], ignore_index=True)
+        .drop_duplicates(subset=["Gare de départ", "Gare d'arrivée"])
+        .reset_index(drop=True)
+        )
+    
+    return df_rail_links

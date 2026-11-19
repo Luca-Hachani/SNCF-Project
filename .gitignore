@@ -6,6 +6,17 @@ dist/
 wheels/
 *.egg-info
 draft/
+logs/*
+
+#personal files
+/tmp
+
+#Test coverage
+.coverage
+.coverage.*
+
+#personal note 
+.memo.md
 
 # Virtual environments
 .venv
