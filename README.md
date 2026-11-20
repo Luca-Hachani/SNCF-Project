@@ -100,3 +100,18 @@ A GitHub Actions workflow (`.github/workflows/ci.yml`) automates quality checks 
 1. Sets up the Python environment and installs dependencies reproducibly with **`uv`**.
 2. Runs **`ruff`** linting and formatting checks to enforce PEP 8 compliance.
 3. Executes the **`pytest` + `pytest-cov`** test suite to prevent regressions before merging.
+
+
+## Datasets
+
+This application relies on three open-data CSV datasets from **data.gouv.fr** and **SNCF Open Data**:
+
+| Dataset | Source | Key Columns Used | Role in the Application |
+| :--- | :--- | :--- | :--- |
+| **French Communes & Postal Codes** (`liste-communes-France.csv`) | [data.gouv.fr](https://www.data.gouv.fr/datasets/communes-de-france-base-des-codes-postaux) | `nom_de_la_commune`, `latitude`, `longitude` | Used to collect the latitude and longitude of all cities in France and populate the departure city list in the user search form. |
+| **SNCF Monthly Regularity** (`regularite-mensuelle-tgv-aqst.csv` / SNCF Open Data) | [SNCF Open Data](https://ressources.data.sncf.com/explore/dataset/regularite-mensuelle-ter/information/) | `Date`, `Gare de départ`, `Gare d'arrivée`, `Durée moyenne du trajet`, delay rates, cancellation counts, and root-cause percentages | Main project dataset used to compute a reliability score between `0` and `1` for every TGV route and power the punctuality visualizations. |
+| **SNCF Reference Stations** (`liste-des-gares.csv`) | [SNCF Open Data](https://ressources.data.sncf.com/explore/dataset/liste-des-gares/table/) | `LIBELLE`, `X_WGS84` (longitude), `Y_WGS84` (latitude) | Provides official station names and WGS84 coordinates to match stations from the main dataset and find the closest departure stations to French communes. |
+
+### Data Processing Notes
+* **Station Name Normalization:** Station labels are normalized (uppercase, stripped whitespace, hyphens replaced with spaces) to join the regularity dataset (`Gare de départ`) with the station reference table (`LIBELLE`).
+* **Coordinate Deduplication:** Multi-platform entries for the same station in `liste-des-gares.csv` are aggregated by mean `(lon, lat)` coordinates to ensure unique spatial markers and accurate nearest-neighbor distance calculations.
