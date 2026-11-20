@@ -35,6 +35,8 @@ def render_map_stations(df_reg: pd.DataFrame, df_stations) -> None:
             df_reg["Gare de départ"].dropna().str.upper().str.strip().unique()
         )
 
+        """ rename column X_WGS84/Y_WGS84 into lon/lat to match
+        colmuns name to match requirement to st.map"""
         clean_stations = pd.DataFrame(
             {
                 "clean_station": (
@@ -47,14 +49,15 @@ def render_map_stations(df_reg: pd.DataFrame, df_stations) -> None:
                 .astype(str)
                 .str.title()
                 .str.strip(),
-                # rename column X_WGS84/Y_WGS84 into lon/lat to match colmuns name to match requirement to st.map
                 "lon": pd.to_numeric(df_stations["X_WGS84"], errors="coerce"),
                 "lat": pd.to_numeric(df_stations["Y_WGS84"], errors="coerce"),
             }
         )
 
         df_unique_pos = (
-            clean_stations[clean_stations["clean_station"].isin(clean_reg_stations)]
+            clean_stations[
+                clean_stations["clean_station"].isin(clean_reg_stations)
+            ]
             .dropna(subset=["lon", "lat", "display_name"])
             .groupby("display_name", as_index=False)
             .agg({"lon": "mean", "lat": "mean"})
@@ -107,7 +110,9 @@ def render_map_stations(df_reg: pd.DataFrame, df_stations) -> None:
         map_deck = pdk.Deck(
             layers=[scatter_layer, text_layer],
             initial_view_state=view_state,
-            tooltip={"text": "Station: {display_name}\nLat: {lat}\nLon: {lon}"},
+            tooltip={
+                "text": "Station: {display_name}\nLat: {lat}\nLon: {lon}"
+            },
         )
 
         # Display the map

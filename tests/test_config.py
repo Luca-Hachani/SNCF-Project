@@ -71,7 +71,9 @@ def test_setup_logging_when_file_exists_relative_path(
     mock_dict_config.assert_called_once()
     passed_config = mock_dict_config.call_args[0][0]
 
-    assert passed_config["handlers"]["error_file"]["filename"] == str(expected_log_path)
+    assert passed_config["handlers"]["error_file"]["filename"] == str(
+        expected_log_path
+    )
 
 
 def test_setup_logging_when_missing_config_file(

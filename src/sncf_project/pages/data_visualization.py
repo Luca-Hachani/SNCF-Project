@@ -1,7 +1,8 @@
 """Data visualization page for the SNCF Project Streamlit application.
 
 Loads the TGV monthly regularity and station coordinate datasets, provides an
-interactive table preview, show the stations maps and display for a certain route the trends (delays and cancellation)
+interactive table preview, show the stations maps and display for a
+certain route the trends (delays and cancellation)
 """
 
 import logging
@@ -31,7 +32,8 @@ if df_reg is None or df_stations is None:
         df_stations is not None,
     )
     st.error(
-        "Unable to load SNCF datasets. Check logs/error.log for the exact file path error."
+        "Unable to load SNCF datasets. Check logs/error.log for the exact "
+        "file path error."
     )
     st.stop()
 

@@ -1,4 +1,5 @@
-"""Domain model representing a traveler and their TGV-to-airport trip criteria."""
+"""Domain model representing a traveler and their TGV-to-airport 
+trip criteria."""
 
 import datetime
 import logging
@@ -13,7 +14,7 @@ logger = logging.getLogger("sncf_project.models.traveler")
 
 @dataclass
 class Traveler:
-    """Represent a traveler and their trip criteria for TGV-to-airport matching.
+    """Represent a traveler and their trip criteria for TGV-to-airport matching
 
     Stores the departure airport code, scheduled trip date, and departure city,
     and resolves the closest TGV departure stations from SNCF and commune
@@ -87,7 +88,7 @@ class Traveler:
         df_stations: pd.DataFrame,
         df_communes: pd.DataFrame,
     ) -> None:
-        """Compute the 3 closest TGV departure stations to ``__departure_city``.
+        """Compute the 3 closest TGV departure stations to ``__departure_city``
 
         Looks up the departure city's coordinates in ``df_communes``, matches
         active TGV departure stations between ``df_reg`` and ``df_stations``,
@@ -106,15 +107,14 @@ class Traveler:
             None
 
         Raises:
-            ValueError: If ``__departure_city`` is not found in ``df_communes``.
+            ValueError: If ``__departure_city`` is not found in ``df_communes``
         """
         departure_city_info = df_communes[
             df_communes["nom_de_la_commune"] == self.__departure_city
         ]
         if departure_city_info.empty:
-            msg = (
-                f"Departure city not found in communes dataset: {self.__departure_city}"
-            )
+            msg = f"Departure city not found in communes dataset: \
+            {self.__departure_city}"
             logger.error(msg)
             raise ValueError(msg)
 
@@ -123,12 +123,15 @@ class Traveler:
             float(departure_city_info["latitude"].iloc[0]),
         ]
 
-        # Match stations with geoloc from 2 SNCF datasets without mutating inputs
+        """Match stations with geoloc from 2 SNCF datasets 
+        without mutating inputs"""
         clean_reg_stations = (
             df_reg[["Gare de départ"]]
             .dropna()
             .assign(
-                clean_station=lambda df: df["Gare de départ"].str.upper().str.strip()
+                clean_station=lambda df: (
+                    df["Gare de départ"].str.upper().str.strip()
+                )
             )
             .drop_duplicates(subset=["clean_station"])
         )
@@ -151,7 +154,9 @@ class Traveler:
         )
 
         df_unique_pos = (
-            clean_stations.merge(clean_reg_stations, on="clean_station", how="inner")
+            clean_stations.merge(
+                clean_reg_stations, on="clean_station", how="inner"
+            )
             .dropna(subset=["lon", "lat", "display_name", "Gare de départ"])
             .groupby("display_name", as_index=False)
             .agg(

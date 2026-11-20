@@ -68,7 +68,9 @@ def sample_df_stations() -> pd.DataFrame:
     )
 
 
-def test_find_closest_station_default(sample_df_stations: pd.DataFrame) -> None:
+def test_find_closest_station_default(
+    sample_df_stations: pd.DataFrame,
+) -> None:
     """Return the top_1 closest station from the city Grenoble"""
     echirolles_coords = [5.7147828, 45.1441357]
 
@@ -82,16 +84,23 @@ def test_find_closest_station_top_n(sample_df_stations: pd.DataFrame) -> None:
     """Return the top_3 closest station from the city Grenoble"""
     echirolles_coords = [5.7147828, 45.1441357]
 
-    result = find_closest_stations(sample_df_stations, echirolles_coords, top_n=3)
+    result = find_closest_stations(
+        sample_df_stations, echirolles_coords, top_n=3
+    )
 
     assert result == ["GRENOBLE", "ANNECY", "LYON PART DIEU"]
 
 
-def test_find_closest_station_top_n_exceding(sample_df_stations: pd.DataFrame) -> None:
-    """Return the top_n closest station from the city Grenoble without exceding the size of the sample_df_stations"""
+def test_find_closest_station_top_n_exceding(
+    sample_df_stations: pd.DataFrame,
+) -> None:
+    """Return the top_n closest station from the city Grenoble without
+    exceding the size of the sample_df_stations"""
     echirolles_coords = [5.7147828, 45.1441357]
 
-    result = find_closest_stations(sample_df_stations, echirolles_coords, top_n=10)
+    result = find_closest_stations(
+        sample_df_stations, echirolles_coords, top_n=10
+    )
 
     assert len(result) == len(sample_df_stations)
     assert result[0] == "GRENOBLE"
@@ -103,7 +112,9 @@ def test_find_closest_stations_empty_df() -> None:
         columns=["display_name", "lon", "lat", "Gare de départ"]
     )
     echirolles_coords = [5.7147828, 45.1441357]
-    result = find_closest_stations(sample_df_stations, echirolles_coords, top_n=1)
+    result = find_closest_stations(
+        sample_df_stations, echirolles_coords, top_n=1
+    )
 
     assert result == []
 
@@ -115,7 +126,9 @@ def test_find_closest_stations_missing_columns() -> None:
         find_closest_stations(bad_df, [5.7147828, 45.1441357])
 
 
-def test_find_closest_stations_invalid_coords(sample_df_stations: pd.DataFrame) -> None:
+def test_find_closest_stations_invalid_coords(
+    sample_df_stations: pd.DataFrame,
+) -> None:
     """Invalid value for city coords"""
     with pytest.raises(ValueError, match="two valid coordinates"):
         find_closest_stations(sample_df_stations, [5.7147828])
@@ -124,7 +137,11 @@ def test_find_closest_stations_invalid_coords(sample_df_stations: pd.DataFrame) 
         find_closest_stations(sample_df_stations, [5.7147828, float("nan")])
 
 
-def test_find_closest_stations_invalid_top_n(sample_df_stations: pd.DataFrame) -> None:
+def test_find_closest_stations_invalid_top_n(
+    sample_df_stations: pd.DataFrame,
+) -> None:
     """Invalid value for top_n"""
     with pytest.raises(ValueError, match="Top_n must be > 1"):
-        find_closest_stations(sample_df_stations, [5.7147828, 45.1441357], top_n=0)
+        find_closest_stations(
+            sample_df_stations, [5.7147828, 45.1441357], top_n=0
+        )

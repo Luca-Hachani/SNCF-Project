@@ -52,7 +52,11 @@ pg = st.navigation(
             icon="🏠",
             default=True,
         ),
-        st.Page("pages/data_visualization.py", title="Visualize the Data", icon="📊"),
+        st.Page(
+            "pages/data_visualization.py",
+            title="Visualize the Data",
+            icon="📊",
+        ),
         st.Page("pages/search_form.py", title="Plan your TGV", icon="🔍"),
     ]
 )

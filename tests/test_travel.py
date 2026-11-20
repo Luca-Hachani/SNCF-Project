@@ -1,4 +1,4 @@
-"""Tests for the Traveler domain model (src/sncf_project/models/traveler.py)."""
+"""Tests for the Traveler domain model (src/sncf_project/models/traveler.py)"""
 
 import datetime
 
@@ -10,7 +10,8 @@ from sncf_project.models.traveler import Traveler
 
 @pytest.fixture
 def sample_datasets() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """Create minimal regularity, stations, and communes DataFrames for testing."""
+    """Create minimal regularity, stations, and communes DataFrames
+    for testing."""
     df_reg = pd.DataFrame(
         {
             "Gare de départ": [
@@ -61,7 +62,8 @@ def test_traveler_initialization_and_getters() -> None:
 def test_compute_departure_station_finds_top_3_and_does_not_mutate_inputs(
     sample_datasets: tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame],
 ) -> None:
-    """Verify compute_departure_station finds the 3 closest unique stations cleanly."""
+    """Verify compute_departure_station finds the 3 closest unique stations
+    cleanly."""
     df_reg, df_stations, df_communes = sample_datasets
     reg_cols_before = list(df_reg.columns)
     stations_cols_before = list(df_stations.columns)
@@ -81,7 +83,8 @@ def test_compute_departure_station_finds_top_3_and_does_not_mutate_inputs(
 def test_compute_departure_station_unknown_city_raises_value_error(
     sample_datasets: tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame],
 ) -> None:
-    """Verify ValueError is raised when departure city is missing from df_communes."""
+    """Verify ValueError is raised when departure city is missing from
+    df_communes."""
     df_reg, df_stations, df_communes = sample_datasets
     traveler = Traveler("LYS", datetime.date(2026, 7, 15), "UnknownCity")
 

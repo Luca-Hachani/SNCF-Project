@@ -20,7 +20,7 @@ def load_dataset(file_path: str, sep: str = ";") -> pd.DataFrame:
         sep (str, optional): Column delimiter character. Defaults to ``";"``.
 
     Returns:
-        pd.DataFrame | None: Loaded DataFrame if successful, otherwise ``None``.
+        pd.DataFrame | None: Loaded DataFrame if successful, otherwise ``None``
     """
     try:
         logger.info(f"Loading the dataset : {file_path}")
@@ -36,18 +36,22 @@ def load_dataset(file_path: str, sep: str = ";") -> pd.DataFrame:
         logger.error(f"Failed to parse CSV structure in {file_path}: {e}")
         return None
     except PermissionError:
-        logger.error(f"Permission denied while attempting to read: {file_path}")
+        logger.error(
+            f"Permission denied while attempting to read: {file_path}"
+        )
         return None
 
 
 def find_closest_stations(
     df_stations_pos: pd.DataFrame, lon_lat: list[int], top_n: int = 1
 ) -> list[str]:
-    """Return the ``top_n`` closest station names to a given ``[lon, lat]`` point.
+    """Return the ``top_n`` closest station names to a given
+    ``[lon, lat]`` point.
 
     Computes squared Euclidean distance in ``(lon, lat)`` space between the
     target city coordinates and each station in ``df_stations_pos``, returning
-    the nearest ``top_n`` station display names ordered from closest to farthest.
+    the nearest ``top_n`` station display names ordered from closest to
+    farthest.
 
     Args:
         df_stations_pos (pd.DataFrame): DataFrame containing ``"lon"``,
@@ -94,4 +98,8 @@ def find_closest_stations(
 
     logger.info(df_stations_pos.iloc[top_indices].head(10))
 
-    return df_stations_pos.iloc[top_indices]["Gare de départ"].astype(str).tolist()
+    return (
+        df_stations_pos.iloc[top_indices]["Gare de départ"]
+        .astype(str)
+        .tolist()
+    )
