@@ -44,7 +44,10 @@ TRIP_MULTI_COLUMNS = [
     ),
     (
         "Causes en % (Retard)",
-        "Prct retard pour cause prise en compte voyageurs (affluence, gestions PSH, correspondances)",
+        (
+            "Prct retard pour cause prise en compte voyageurs "
+            "(affluence, gestions PSH, correspondances)"
+        ),
     ),
 ]
 

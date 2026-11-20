@@ -25,10 +25,11 @@ def setup_logging(config_path: Path = DEFAULT_CONFIG_PATH) -> None:
         None
     """
     if config_path.exists():
-        with open(config_path, "r") as f:
+        with open(config_path) as f:
             config = yaml.safe_load(f)
 
-        # Create parent directories (e.g., logs/) for any file handlers before dictConfig runs
+        """ Create parent directories (e.g., logs/) for any file 
+        handlers before dictConfig runs"""
         for handler in config.get("handlers", {}).values():
             if "filename" in handler:
                 log_path = Path(handler["filename"])

@@ -1,6 +1,8 @@
-"""Route-level reliability, delay trends, and root-cause analysis visualizations.
+"""Route-level reliability, delay trends, and root-cause analysis
+visualizations
 
-Provides interactive departure/arrival station selectors and a date range slider
+Provides interactive departure/arrival station selectors and a date
+range slider
 to compute cancellation and delay metrics, monthly evolution bar charts, and
 horizontal delay-cause breakdowns for a chosen TGV route.
 """
@@ -11,7 +13,9 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-logger = logging.getLogger("sncf_project.pages.components.render_df_visualisation")
+logger = logging.getLogger(
+    "sncf_project.pages.components.render_df_visualisation"
+)
 
 
 def render_df_visualisation(df_reg: pd.DataFrame) -> None:
@@ -23,7 +27,8 @@ def render_df_visualisation(df_reg: pd.DataFrame) -> None:
     chart and a horizontal bar chart of average delay causes.
 
     Args:
-        df_reg (pd.DataFrame): TGV monthly regularity DataFrame containing route
+        df_reg (pd.DataFrame): TGV monthly regularity DataFrame containing
+        route
             identifiers, train delay/cancellation counts, and delay cause
             percentage columns.
 
@@ -44,7 +49,9 @@ def render_df_visualisation(df_reg: pd.DataFrame) -> None:
     }
 
     if not required_columns.issubset(df_reg.columns):
-        logger.info(f"Missing some columns for analysis, df.columns: {df_reg.columns}")
+        logger.info(
+            f"Missing some columns for analysis, df.columns: {df_reg.columns}"
+        )
         st.error("Missing some columns for analysis")
         return
 
@@ -54,25 +61,33 @@ def render_df_visualisation(df_reg: pd.DataFrame) -> None:
     # Select a route
     col_departure, col_arrival = st.columns(2)
     with col_departure:
-        departure_stations = sorted(df_copy["Gare de départ"].dropna().unique())
+        departure_stations = sorted(
+            df_copy["Gare de départ"].dropna().unique()
+        )
         selected_dep = st.selectbox(
-            "Gare de Départ", departure_stations, key="route_departure_stations"
+            "Gare de Départ",
+            departure_stations,
+            key="route_departure_stations",
         )
 
     df_departure = df_copy[df_copy["Gare de départ"] == selected_dep]
 
     with col_arrival:
-        arrival_stations = sorted(df_departure["Gare d'arrivée"].dropna().unique())
+        arrival_stations = sorted(
+            df_departure["Gare d'arrivée"].dropna().unique()
+        )
         selected_arr = st.selectbox(
             "Gare d'Arrivée", arrival_stations, key="route_arrival_stations"
         )
 
-    df_route = df_departure[df_departure["Gare d'arrivée"] == selected_arr].sort_values(
-        "Date"
-    )
+    df_route = df_departure[
+        df_departure["Gare d'arrivée"] == selected_arr
+    ].sort_values("Date")
 
     if df_route.empty:
-        logger.info(f"No route for theses 2 stations: {selected_dep}, {selected_arr}")
+        logger.info(
+            f"No route for theses 2 stations: {selected_dep}, {selected_arr}"
+        )
         st.warning("No route for theses 2 stations")
         return
 
@@ -89,28 +104,45 @@ def render_df_visualisation(df_reg: pd.DataFrame) -> None:
             key="route_date_stations",
         )
 
-        df_date_route = df_route[df_route["Date"].between(start_date, end_date)]
+        df_date_route = df_route[
+            df_route["Date"].between(start_date, end_date)
+        ]
     else:
         start_date = end_date = available_dates[0]
         df_date_route = df_route
-        logger.info(f"There is no enough date range to show: {len(available_dates)}")
+        logger.info(
+            f"There is no enough date range to show: {len(available_dates)}"
+        )
         st.warning("There is no date range data to show")
 
     if df_date_route.empty:
-        logger.info("There is no data on the selected date range for this route")
-        st.warning("There is no data on the selected date range for this route")
+        logger.info(
+            "There is no data on the selected date range for this route"
+        )
+        st.warning(
+            "There is no data on the selected date range for this route"
+        )
         return
 
     logger.info(
-        f"Route selected {selected_dep} - {selected_arr}, {start_date} - {end_date}"
+        f"Route selected {selected_dep} - {selected_arr}, \
+            {start_date} - {end_date}"
     )
 
     # Compute metrics
-    total_scheduled = int(df_date_route["Nombre de circulations prévues"].sum())
+    total_scheduled = int(
+        df_date_route["Nombre de circulations prévues"].sum()
+    )
     total_cancelled = int(df_date_route["Nombre de trains annulés"].sum())
-    total_delay_15 = int(df_date_route["Nombre trains en retard > 15min"].sum())
-    total_delay_30 = int(df_date_route["Nombre trains en retard > 30min"].sum())
-    total_delay_60 = int(df_date_route["Nombre trains en retard > 60min"].sum())
+    total_delay_15 = int(
+        df_date_route["Nombre trains en retard > 15min"].sum()
+    )
+    total_delay_30 = int(
+        df_date_route["Nombre trains en retard > 30min"].sum()
+    )
+    total_delay_60 = int(
+        df_date_route["Nombre trains en retard > 60min"].sum()
+    )
 
     rate_cancelled = 0.0
     rate_delay_15 = 0.0
@@ -156,13 +188,20 @@ def render_df_visualisation(df_reg: pd.DataFrame) -> None:
         "Prct retard pour cause infrastructure",
         "Prct retard pour cause gestion trafic",
         "Prct retard pour cause matériel roulant",
-        "Prct retard pour cause gestion en gare et réutilisation de matériel",
-        "Prct retard pour cause prise en compte voyageurs (affluence, gestions PSH, correspondances)",
+        (
+            "Prct retard pour cause gestion en gare et "
+            "réutilisation de matériel"
+        ),
+        (
+            "Prct retard pour cause prise en compte voyageurs "
+            "(affluence, gestions PSH, correspondances)"
+        ),
     ]
 
     if not set(causes_columns).issubset(df_reg.columns):
         logger.info(
-            f"Missing some columns for causes analysis, df.columns: {df_reg.columns}"
+            f"Missing some columns for causes analysis, df.columns: \
+                {df_reg.columns}"
         )
         st.error("Missing some columns for causes analysis")
         return

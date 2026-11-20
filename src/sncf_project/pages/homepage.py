@@ -1,7 +1,8 @@
 """Homepage view for the SNCF Project Streamlit application.
 
 Displays the project overview, navigation links to the data visualization and
-trip planning pages, and logs unique visitor connection metadata once per session.
+trip planning pages, and logs unique visitor connection metadata
+once per session.
 """
 
 import logging
@@ -15,7 +16,7 @@ logger = logging.getLogger("sncf_project.pages.homepage")
 def get_client_ip() -> str:
     """Retrieve the visitor's IP address from the Streamlit request context.
 
-    Checks the ``X-Forwarded-For`` HTTP header first (for reverse-proxy setups),
+    Checks the ``X-Forwarded-For`` HTTP header first (for reverse-proxy setups)
     then falls back to ``st.context.ip_address``, and finally defaults to
     ``"127.0.0.1 (local)"`` when running locally without proxy headers.
 
@@ -35,7 +36,9 @@ def get_client_ip() -> str:
 
 
 st.title("Welcome to our SNCF Project")
-st.subheader("Catch your flight on time by choosing the most reliable TGV route!")
+st.subheader(
+    "Catch your flight on time by choosing the most reliable TGV route!"
+)
 
 # pages/ -> sncf_project/ -> src/ project_root/
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -50,8 +53,9 @@ with center_col:
 st.markdown(
     """
     Welcome to our platform! \n
-    Built by a **team of 3 developers from the MS IA**, this application leverages official **SNCF Open Data** to help you plan stress-free connections between your home city  and your departure
-    airport.
+    Built by a **team of 3 developers from the MS IA**, this application 
+    leverages official **SNCF Open Data** to help you plan stress-free 
+    connections between your home city  and your departure airport.
     """
 )
 
@@ -61,7 +65,8 @@ st.markdown("### 📊 Explore the SNCF Dataset")
 st.markdown(
     """
         Curious about the SNCF dataset ?
-        * Inspect monthly **TGV regularity and punctuality** metrics across France
+        * Inspect monthly **TGV regularity and punctuality** metrics 
+        across France
         * Visualize **stations locations**
         * Filter delays by **TGV line, stations, and travel date**
     """
@@ -77,10 +82,13 @@ st.divider()
 st.markdown("### 🧭 How does our planning system work?")
 st.markdown(
     """
-    Planning a holidays by plane ? Our tool builds your door-to-airport itinery by TGV:
-    1. Select your **departure airport** and your **departure city** (via search or geolocation)
+    Planning a holidays by plane ? Our tool builds your door-to-airport 
+    itinery by TGV:
+    1. Select your **departure airport** and your **departure city** (via 
+    search or geolocation)
     2. Discover the closest **TGV stations** from your departure city
-    3. **Compare TGV line reliability & delay predictions** so you can schedule the safest ride to the airport!
+    3. **Compare TGV line reliability & delay predictions** so you can 
+    schedule the safest ride to the airport!
     """
 )
 st.page_link(
@@ -91,12 +99,16 @@ st.page_link(
 st.divider()
 
 st.info(
-    "💡 **Spend all the time you want on our website.** \n "
-    "**Have a great time exploring it!** If you spot anything or have ideas to improve the tool, don't hesitate to send us your feedback.",
+    "💡 **Spend all the time you want on our website.**\n\n"
+    "**Have a great time exploring it!** If you spot anything or "
+    "have ideas to improve the tool, don't hesitate to send us "
+    "your feedback."
 )
 
 if "visitor_logged" not in st.session_state:
     client_ip = get_client_ip()
     user_agent = st.context.headers.get("User-Agent", "unknown")
-    logger.info("New visitor connected | IP=%s | User-Agent=%s", client_ip, user_agent)
+    logger.info(
+        "New visitor connected | IP=%s | User-Agent=%s", client_ip, user_agent
+    )
     st.session_state["visitor_logged"] = True

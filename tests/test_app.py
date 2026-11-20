@@ -5,7 +5,9 @@ from unittest.mock import patch
 
 from streamlit.testing.v1 import AppTest
 
-APP_PATH = Path(__file__).resolve().parents[1] / "src" / "sncf_project" / "app.py"
+APP_PATH = (
+    Path(__file__).resolve().parents[1] / "src" / "sncf_project" / "app.py"
+)
 
 
 def test_init_logging_calls_setup_logging() -> None:
@@ -21,7 +23,8 @@ def test_init_logging_calls_setup_logging() -> None:
 
 
 def test_app_boots_and_renders_default_page() -> None:
-    """Verify app.py runs without exceptions and renders the sidebar caption."""
+    """Verify app.py runs without exceptions and renders the sidebar
+    caption."""
     at = AppTest.from_file(str(APP_PATH), default_timeout=10)
     at.run()
 

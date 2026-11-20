@@ -24,7 +24,7 @@ class Trip:
     _trip_date : str
         The scheduled date of the trip (format: YYYY-MM-DD).
     _arrival_airport : str
-        The associated airport at the arrival station, 
+        The associated airport at the arrival station,
         if a correspondence exists.
     _arrival_station : str, (set by set_arrival_station)
         The name of the arrival train station.
@@ -38,7 +38,7 @@ class Trip:
     __df : pd.DataFrame
         Preprocessed main SNCF dataset loaded once at the class level.
     __df_airport_seasonality : pd.DataFrame
-        Preprocessed aggregated seasonality metrics 
+        Preprocessed aggregated seasonality metrics
         for airport-connected routes.
     __df_rail_links : pd.DataFrame
         Dataset containing all unique train route links (departure -> arrival).
@@ -46,7 +46,7 @@ class Trip:
     Methods
     -------
     load_datasets(df_path, seasonality_path, links_path) -> None
-        Class method to load preprocessed CSV datasets 
+        Class method to load preprocessed CSV datasets
         into class-level attributes.
     get_departure_station() -> str
         Returns the departure train station.
@@ -61,14 +61,14 @@ class Trip:
     get_trip_reliability() -> float
         Returns the precomputed trip reliability.
     get_possible_arrival_stations() -> list of str
-        Lists all possible arrival train stations 
+        Lists all possible arrival train stations
         matching the target arrival airport.
     get_path_to_target_station(target_station: str) -> list of str
-        Calculates the shortest path to a target station 
+        Calculates the shortest path to a target station
         using the unique links graph.
         !!! The data have to loaded !!!
     get_all_paths_to_stations() -> list of list of str
-        Retrieves all valid shortest paths from the departure station 
+        Retrieves all valid shortest paths from the departure station
         to every target station associated with the arrival airport.
         !!! The data have to loaded !!!
     set_shortest_path() -> None
@@ -87,7 +87,7 @@ class Trip:
     Notes
     -----
     - Acts as a core entity for evaluating train delays and connection risks.
-    - Warning : we have to loading data before building any object 
+    - Warning : we have to loading data before building any object
     such that for instance :
     with streamlit.spinner("Chargement des données SNCF en cours..."):
     Trip.load_datasets()
@@ -157,7 +157,7 @@ class Trip:
 
         Notes
         -----
-        Datasets are loaded only once at runtime to optimize memory 
+        Datasets are loaded only once at runtime to optimize memory
         and performance.
         """
 
@@ -255,14 +255,14 @@ class Trip:
 
     def get_possible_arrival_stations(self) -> list[str]:
         """
-        Lists all possible arrival train stations associated with 
-        the traveler's target arrival airport using 
+        Lists all possible arrival train stations associated with
+        the traveler's target arrival airport using
         the STATION_TO_AIRPORT mapping.
 
         Returns
         -------
         list of str
-            A list of train station names that correspond to 
+            A list of train station names that correspond to
             `_arrival_airport`.
         """
         logger.debug(
@@ -270,7 +270,7 @@ class Trip:
             f"{self._arrival_airport}"
         )
 
-        # Extraction of train stations associated with 
+        # Extraction of train stations associated with
         # the traveler's target arrival airport
         possible_arrival_stations = [
             station
@@ -282,8 +282,8 @@ class Trip:
 
     def get_path_to_target_station(self, target_station: str) -> list[str]:
         """
-        Computes the ordered list of stations to follow 
-        from the departure stationto a specific target station, 
+        Computes the ordered list of stations to follow
+        from the departure stationto a specific target station,
         minimizing the average travel time.
 
         !!! The data have to loaded !!!
@@ -301,11 +301,11 @@ class Trip:
         """
         if Trip.__df_rail_links is None:
             logger.error(
-                "Path computation attempt failed: " \
+                "Path computation attempt failed: "
                 "the __df_rail_links dataset is not loaded."
             )
             raise ValueError(
-                "Datasets must be loaded via Trip.load_datasets() " \
+                "Datasets must be loaded via Trip.load_datasets() "
                 "before computing a path."
             )
 
@@ -352,8 +352,8 @@ class Trip:
 
     def get_all_paths_to_possible_arrival_stations(self) -> list[list[str]]:
         """
-        Automatically retrieves the possible arrival stations 
-        associated with the target airport,then computes and returns 
+        Automatically retrieves the possible arrival stations
+        associated with the target airport,then computes and returns
         a list of all valid paths from the departure station
         to each of those target stations.
 
@@ -383,7 +383,7 @@ class Trip:
 
     def set_shortest_path(self) -> None:
         """
-        Retrieves the shortest path by number of stops (elements) among 
+        Retrieves the shortest path by number of stops (elements) among
         all possible paths to the target airport.
 
         !!! The data have to loaded !!!
@@ -394,7 +394,7 @@ class Trip:
             # Extract the length of each path
             paths_lengths = [len(path) for path in paths]
 
-            # Retrieve the index of the shortest path and 
+            # Retrieve the index of the shortest path and
             # store it in the attribute
             self._shortest_path = paths[np.argmin(paths_lengths)]
 
@@ -448,9 +448,7 @@ class Trip:
                 ]
                 rail_links_reliability.append(df_rail_link["Fiabilité"].item())
             self._trip_reliability = np.prod(rail_links_reliability)
-            logger.debug(
-                f"Trip reliability set to: {self._arrival_station}"
-            )
+            logger.debug(f"Trip reliability set to: {self._arrival_station}")
         else:
             logger.warning("The shortest path has not been computed yet.")
             self._trip_reliability = None
