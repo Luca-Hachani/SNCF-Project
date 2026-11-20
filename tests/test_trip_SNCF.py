@@ -36,6 +36,7 @@ def test_trip_initialization_and_getters():
     assert trip.get_arrival_airport == "PARIS-AIRPORT-TEST"
     assert trip.get_arrival_station is None
     assert trip.get_shortest_path is None
+    assert trip.get_trip_reliability is None
 
 
 # Test load_datasets()
@@ -141,7 +142,7 @@ def test_get_path_to_target_station_success_and_no_path():
         _departure_station="MARSEILLE-STATION-TEST",
         _trip_date="1789-07-14",
         _arrival_airport="PARIS-AIRPORT-TEST"
-    )
+        )
     
     # Path exist : MARSEILLE-STATION-TEST -> PARIS-STATION-TEST
     path = trip.get_path_to_target_station("PARIS-STATION-TEST")
@@ -194,7 +195,7 @@ def test_get_all_paths_and_set_shortest_path_and_arrival():
             _departure_station="MARSEILLE-STATION-TEST",
             _trip_date="1789-07-14",
             _arrival_airport="PARIS-AIRPORT-TEST"
-        )
+            )
         
         paths = trip.get_all_paths_to_possible_arrival_stations()
         assert len(paths) == 2
@@ -218,11 +219,13 @@ def test_set_shortest_path_no_paths_found():
     """
     Verify behavior when no valid path is found.
     """
-    Trip._Trip__df_rail_links = pd.DataFrame({
+    df_links = pd.DataFrame({
         "Gare de départ": ["MARSEILLE-STATION-TEST"],
         "Gare d'arrivée": ["LYON-STATION-TEST"],
         "Durée moyenne du trajet": [180]
-    })
+        })
+    Trip._Trip__df_rail_links = df_links
+
     with patch.dict(
         settings.STATION_TO_AIRPORT, 
         {"PARIS-STATION-TEST": "PARIS-AIRPORT-TEST"}
@@ -231,31 +234,71 @@ def test_set_shortest_path_no_paths_found():
             _departure_station="MARSEILLE-STATION-TEST",
             _trip_date="1789-07-14",
             _arrival_airport="PARIS-AIRPORT-TEST"
-        )
+            )
         trip.set_shortest_path()
         assert trip.get_shortest_path is None
         
         trip.set_arrival_station()
         assert trip.get_arrival_station is None
 
-# Test set_arrival_station
 
-def test_set_arrival_station_without_shortest_path():
+# Test set_arrival_station & set_trip_reliability
+
+def test_set_arrival_station_and_trip_reliability_wo_valid_shortest_path():
     """
-    Verify that the arrival station cannot be set when _shortest_path 
-    has not been computed (is None).
+    Verify that _trip_reliability is set to None 
+    when _shortest_path is None 
+    or contains fewer than two stations (no rail links).
     """
     trip = Trip(
         _departure_station="MARSEILLE-STATION-TEST",
         _trip_date="1789-07-14",
-        _arrival_airport="PARIS-AIRPORT-TEST"
-    )
-    
-    # S'assurer que le chemin est bien à None à l'initialisation
-    assert trip.get_shortest_path is None
-    
-    # Tenter de définir la gare d'arrivée sans chemin préalable
+        _arrival_airport="MARSEILLE-AIRPORT-TEST",
+        )
+
+    # Case 1: _shortest_path is None
+    trip._shortest_path = None
+    trip.set_trip_reliability()
+    assert trip.get_trip_reliability is None
     trip.set_arrival_station()
-    
-    # La gare d'arrivée doit rester None
     assert trip.get_arrival_station is None
+
+    # Case 2: _shortest_path has only one station (no rail links)
+    trip._shortest_path = ["MARSEILLE-STATION-TEST"]
+    trip.set_trip_reliability()
+    assert trip.get_trip_reliability is None
+
+def test_set_trip_reliability_success():
+    """
+    Verify that _trip_reliability equals the product of the reliabilities
+    of the rail links along _shortest_path.
+    """
+    df_links = pd.DataFrame({
+        "Gare de départ": [
+            "MARSEILLE-STATION-TEST",
+            "LYON-STATION-TEST",
+        ],
+        "Gare d'arrivée": [
+            "LYON-STATION-TEST",
+            "PARIS-STATION-TEST",
+        ],
+        "Fiabilité": [
+            0.5, 
+            0.5
+            ],
+            })
+    Trip._Trip__df_rail_links = df_links
+
+    trip = Trip(
+        _departure_station="MARSEILLE-STATION-TEST",
+        _trip_date="1789-07-14",
+        _arrival_airport="PARIS-AIRPORT-TEST",
+        )
+    trip._shortest_path = [
+        "MARSEILLE-STATION-TEST",
+        "LYON-STATION-TEST",
+        "PARIS-STATION-TEST",
+        ]
+
+    trip.set_trip_reliability()
+    assert trip.get_trip_reliability == 0.25
