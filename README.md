@@ -76,6 +76,23 @@ Test execution is tracked with `pytest-cov` (`uv run pytest --cov=src/sncf_proje
 ### 10. Automated Documentation (`Sphinx`)
 All modules, classes, and functions include standardized **Google-style docstrings** (`Args`, `Returns`, `Raises`, `Attributes`, `Example`), allowing **Sphinx** (`sphinx.ext.autodoc` + `sphinx.ext.napoleon`) to automatically generate browsable HTML API documentation directly from the codebase.
 
+
+```bash
+git clone https://github.com/Luca-Hachani/SNCF-Project.git
+cd SNCF-Project
+uv sync --group docs
+uv run --group docs sphinx-apidoc --implicit-namespaces -f -o docs/source/api src/sncf_project src/sncf_project/app.py
+uv run --group docs sphinx-build -M html docs/source docs/build
+```
+
+Puis ouvrir la documentation dans un navigateur :
+
+```bash
+xdg-open docs/build/html/index.html   # Linux
+open docs/build/html/index.html       # macOS
+start docs/build/html/index.html      # Windows
+```
+
 ---
 
 ### 11. CI/CD Pipeline (`GitHub Actions`)
